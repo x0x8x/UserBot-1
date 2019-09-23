@@ -1,5 +1,6 @@
 import json
 import time
+
 import pandas
 
 
@@ -32,7 +33,7 @@ class Constants:
     def now() -> str:
         timer = time.localtime()
         return str(timer.tm_hour) + ":" + str(timer.tm_min) + ":" + str(timer.tm_sec) + " of " + str(timer.tm_mday) + \
-           "-" + str(timer.tm_mon) + "-" + str(timer.tm_year)
+               "-" + str(timer.tm_mon) + "-" + str(timer.tm_year)
 
     def phoneNumber(self) -> str:
-        return self.__phoneNumber    
+        return self.__phoneNumber
