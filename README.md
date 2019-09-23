@@ -1,3 +1,3 @@
 # UserBot
 
-UserBot created by @giulioCoaInCamelCase.
+UserBot created by [Giulio Coa](https://t.me/giulioCoaInCamelCase).
