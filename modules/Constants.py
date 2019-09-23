@@ -32,8 +32,8 @@ class Constants:
     @staticmethod
     def now() -> str:
         timer = time.localtime()
-        return str(timer.tm_hour) + ":" + str(timer.tm_min) + ":" + str(timer.tm_sec) + " of " + str(timer.tm_mday) + \
-               "-" + str(timer.tm_mon) + "-" + str(timer.tm_year)
+        return "{0}:{1}:{2} of {3}-{4}-{5}".format(str(timer.tm_hour), str(timer.tm_min), str(timer.tm_sec),
+                                                   str(timer.tm_mday), str(timer.tm_mon), str(timer.tm_year))
 
     def phoneNumber(self) -> str:
         return self.__phoneNumber
