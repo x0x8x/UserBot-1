@@ -5,7 +5,7 @@ from modules import Constants
 
 constants = Constants.Constants()
 chatAllowed = [1234567890, 1234567890, ...]
-initialLog = ["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."]
+initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."])
 constants.loadCreators()
 adminsIdList = constants.creators().to_json(orient="columns")
 adminsIdList = list(adminsIdList["id"].values())
@@ -51,7 +51,7 @@ def replyKeyboard(client: Client, message: Message):
     global constants
 
     message.reply_chat_action("typing")
-    keyboard = [[KeyboardButton("Text")], ...]
+    keyboard = list([list([KeyboardButton("Text")]), ...])
     keyboard = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
     message.reply_text("Text", parse_mode="markdown", disable_web_page_preview=True, reply_markup=keyboard)
     log(client, "I sent a ReplyKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
@@ -65,18 +65,19 @@ def replyInlineKeyboard(client: Client, message: Message):
     global constants
 
     message.reply_chat_action("typing")
-    keyboard = [[InlineKeyboardButton("Text", url="Text")], ...]
+    keyboard = list([list([InlineKeyboardButton("Text", url="Text")]), ...])
     keyboard = InlineKeyboardMarkup(keyboard)
     message.reply_text("Text", parse_mode="markdown", disable_web_page_preview=True, reply_markup=keyboard)
     log(client, "I sent a ReplyKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
-@app.on_message(Filters.command("retrieve", prefix=["/", "!", "."]) & Filters.user(adminsIdList))
+@app.on_message(Filters.command("retrieve", prefix=list(["/", "!", "."])) & Filters.user(adminsIdList))
 def retrieveChatId(client: Client, message: Message):
     global constants, chatAllowed
 
     if message.chat.id not in chatAllowed:
         chatAllowed.append(message.chat.id)
+        message.delete()
         log(client, "I added " + message.chat.title + " to the list of allowed chat at " + constants.now() + ".")
 
 
