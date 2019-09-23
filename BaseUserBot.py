@@ -5,13 +5,11 @@ from modules import Constants
 
 constants = Constants.Constants()
 chatAllowed = [1234567890, 1234567890, ...]
-initialLog = list()
-log(logging="Initializing the Admins ...")
+initialLog = ["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."]
 constants.loadCreators()
 adminsIdList = constants.creators().to_json(orient="columns")
 adminsIdList = list(adminsIdList["id"].values())
-log(logging="Admins initializated\nInitializing the Client ...")
-app = Client("UserBot", constants.appId(), constants.appHash(), phone_number=constants.phoneNumber(),
+app = Client("UserBot", constants.id(), constants.hash(), phone_number=constants.phoneNumber(),
              first_name="Giulio", last_name="Coa")
 
 
@@ -27,10 +25,10 @@ def automaticRemovalStatus(client: Client, message: Message):
 
 
 @app.on_message(Filters.chat(chatAllowed) & Filters.user(adminsIdList))
-def function(client: Client, message: Message):
+def functions(client: Client, message: Message):
     global constants
 
-    message.reply_chat_action(“typing”)
+    message.reply_chat_action("typing")
     pass
 
 
@@ -41,42 +39,39 @@ def log(client: Client = None, logging: str = ""):
         if initialLog is not None:
             # noinspection PyTypeChecker
             for msg in initialLog:
-                client.send_message(constants.log(), msg, parse_mode=“markdown”)
+                client.send_message(constants.log(), msg, parse_mode="markdown")
             initialLog = None
-        client.send_message(constants.log(), logging, parse_mode=“markdown”)
+        client.send_message(constants.log(), logging, parse_mode="markdown")
     else:
         initialLog.append(logging)
 
 
 @app.on_message(Filters.chat(chatAllowed) & Filters.user(adminsIdList))
 def replyKeyboard(client: Client, message: Message):
-    """
-        Inline command
-    """
     global constants
 
-    message.reply_chat_action(“typing”)
+    message.reply_chat_action("typing")
     keyboard = [[KeyboardButton("Text")], ...]
     keyboard = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
-    message.reply_text("Text", parse_mode=“markdown”, disable_web_page_preview=True, reply_markup=keyboard)
+    message.reply_text("Text", parse_mode="markdown", disable_web_page_preview=True, reply_markup=keyboard)
     log(client, "I sent a ReplyKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
 @app.on_message(Filters.chat(chatAllowed) & Filters.user(adminsIdList))
 def replyInlineKeyboard(client: Client, message: Message):
     """
-        Inline command
+        Inline button
     """
     global constants
 
-    message.reply_chat_action(“typing”)
+    message.reply_chat_action("typing")
     keyboard = [[InlineKeyboardButton("Text", url="Text")], ...]
     keyboard = InlineKeyboardMarkup(keyboard)
-    message.reply_text("Text", parse_mode=“markdown”, disable_web_page_preview=True, reply_markup=keyboard)
+    message.reply_text("Text", parse_mode="markdown", disable_web_page_preview=True, reply_markup=keyboard)
     log(client, "I sent a ReplyKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
-@app.on_message(Filters.command("retrieve", prefix=[“/”, “!”, “.”]) & Filters.user(adminsIdList))
+@app.on_message(Filters.command("retrieve", prefix=["/", "!", "."]) & Filters.user(adminsIdList))
 def retrieveChatId(client: Client, message: Message):
     global constants, chatAllowed
 
