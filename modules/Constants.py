@@ -24,7 +24,7 @@ class Constants:
 
     def loadCreators(self):
         with open("creators.json", "r") as users:
-            self.__botCreators = pandas.DataFrame(data=json.load(users), columns=["id", "nickname"])
+            self.__botCreators = pandas.DataFrame(data=json.load(users), columns=list(["id", "nickname"]))
 
     def log(self) -> int:
         return self.__botLog
