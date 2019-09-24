@@ -4,16 +4,15 @@ from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup
 from modules import Constants
 
 constants = Constants.Constants()
-chatAllowed = [1234567890, 1234567890, ...]
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."])
 constants.loadCreators()
-adminsIdList = constants.creators().to_json(orient="columns")
+adminsIdList = constants.creators.to_json(orient="columns")
 adminsIdList = list(adminsIdList["id"].values())
-app = Client("UserBot", constants.id(), constants.hash(), phone_number=constants.phoneNumber(),
-             first_name="Giulio", last_name="Coa")
+app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="Giulio",
+             last_name="Coa")
 
 
-@app.on_message(Filters.chat(chatAllowed) & Filters.service)
+@app.on_message(Filters.chat(constants.chats) & Filters.service)
 def automaticRemovalStatus(client: Client, message: Message):
     global constants
 
@@ -24,7 +23,7 @@ def automaticRemovalStatus(client: Client, message: Message):
     log(client, "I removed a status message from the " + message.chat.title + " at " + constants.now() + ".")
 
 
-@app.on_message(Filters.chat(chatAllowed) & Filters.user(adminsIdList))
+@app.on_message(Filters.chat(constants.chats) & Filters.user(adminsIdList))
 def functions(client: Client, message: Message):
     global constants
 
@@ -39,14 +38,14 @@ def log(client: Client = None, logging: str = ""):
         if initialLog is not None:
             # noinspection PyTypeChecker
             for msg in initialLog:
-                client.send_message(constants.log(), msg, parse_mode="markdown")
+                client.send_message(constants.log, msg, parse_mode="markdown")
             initialLog = None
-        client.send_message(constants.log(), logging, parse_mode="markdown")
+        client.send_message(constants.log, logging, parse_mode="markdown")
     else:
         initialLog.append(logging)
 
 
-@app.on_message(Filters.chat(chatAllowed) & Filters.user(adminsIdList))
+@app.on_message(Filters.chat(constants.chats) & Filters.user(adminsIdList))
 def replyKeyboard(client: Client, message: Message):
     global constants
 
@@ -57,7 +56,7 @@ def replyKeyboard(client: Client, message: Message):
     log(client, "I sent a ReplyKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
-@app.on_message(Filters.chat(chatAllowed) & Filters.user(adminsIdList))
+@app.on_message(Filters.chat(constants.chats) & Filters.user(adminsIdList))
 def replyInlineKeyboard(client: Client, message: Message):
     """
         Inline button
@@ -73,10 +72,10 @@ def replyInlineKeyboard(client: Client, message: Message):
 
 @app.on_message(Filters.command("retrieve", prefix=list(["/", "!", "."])) & Filters.user(adminsIdList))
 def retrieveChatId(client: Client, message: Message):
-    global constants, chatAllowed
+    global constants
 
-    if message.chat.id not in chatAllowed:
-        chatAllowed.append(message.chat.id)
+    if message.chat.id not in constants.chats:
+        constants.chats = message.chat.id
         message.delete()
         log(client, "I added " + message.chat.title + " to the list of allowed chat at " + constants.now() + ".")
 
