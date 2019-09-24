@@ -8,8 +8,8 @@ initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitial
 constants.loadCreators()
 adminsIdList = constants.creators.to_json(orient="columns")
 adminsIdList = list(adminsIdList["id"].values())
-app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="Giulio",
-             last_name="Coa")
+app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="",
+             last_name="")
 
 
 @app.on_message(Filters.chat(constants.chats) & Filters.service)
