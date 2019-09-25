@@ -6,13 +6,15 @@ from modules import Constants
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."])
 constants.loadCreators()
-adminsIdList = constants.creators.to_json(orient="columns")
+adminsIdList = constants.admins.to_json(orient="columns")
 adminsIdList = list(adminsIdList["id"].values())
+chatIdList = constants.chats.to_json(orient="columns")
+chatIdList = list(chatIdList["id"].values())
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="",
              last_name="")
 
 
-@app.on_message(Filters.chat(constants.chats) & Filters.service)
+@app.on_message(Filters.chat(chatIdList) & Filters.service)
 def automaticRemovalStatus(client: Client, message: Message):
     global constants
 
@@ -23,7 +25,7 @@ def automaticRemovalStatus(client: Client, message: Message):
     log(client, "I removed a status message from the " + message.chat.title + " at " + constants.now() + ".")
 
 
-@app.on_message(Filters.chat(constants.chats) & Filters.user(adminsIdList))
+@app.on_message(Filters.chat(chatIdList) & Filters.user(adminsIdList))
 def functions(client: Client, message: Message):
     global constants
 
@@ -45,7 +47,7 @@ def log(client: Client = None, logging: str = ""):
         initialLog.append(logging)
 
 
-@app.on_message(Filters.chat(constants.chats) & Filters.user(adminsIdList))
+@app.on_message(Filters.chat(chatIdList) & Filters.user(adminsIdList))
 def replyKeyboard(client: Client, message: Message):
     global constants
 
@@ -56,7 +58,7 @@ def replyKeyboard(client: Client, message: Message):
     log(client, "I sent a ReplyKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
-@app.on_message(Filters.chat(constants.chats) & Filters.user(adminsIdList))
+@app.on_message(Filters.chat(chatIdList) & Filters.user(adminsIdList))
 def replyInlineKeyboard(client: Client, message: Message):
     """
         Inline button
@@ -72,11 +74,12 @@ def replyInlineKeyboard(client: Client, message: Message):
 
 @app.on_message(Filters.command("retrieve", prefix=list(["/", "!", "."])) & Filters.user(adminsIdList))
 def retrieveChatId(client: Client, message: Message):
-    global constants
+    global constants, chatIdList
 
     if message.chat.id not in constants.chats:
-        constants.chats = message.chat.id
+        constants.chats = dict({"id": message.chat.id, "name": message.chat.title})
         message.delete()
+        chatIdList.append(message.chat.id)
         log(client, "I added " + message.chat.title + " to the list of allowed chat at " + constants.now() + ".")
 
 

@@ -7,24 +7,32 @@ import pandas
 class Constants:
 
     def __init__(self):
-        self.__appHash = "APP HASH"
+        self.__appHash = "APP'S HASH"
         self.__appId = 1234567890
         self.__botLog = -1001234567890
-        self.__botCreators = None
-        self.__chatAllowed = list()
-        self.__phoneNumber = "PHONE NUMBER WITH INTERNATIONAL CODE AND WITHOUT +"
+        self.__botAdmins = None
+        self.__chat = None
+        self.__phoneNumber = "PHONE NUMBER WITH THE INTERNATIONAL CODE AND WITHOUT THE +"
 
     @property
-    def creators(self) -> pandas.DataFrame:
-        return self.__botCreators
+    def admins(self) -> pandas.DataFrame:
+        return self.__botAdmins
 
     @property
-    def chats(self) -> list:
-        return self.__chatAllowed
+    def creator(self) -> int:
+        rows = self.__botAdmins.shape[0]
+        rows = range(rows)
+        for i in rows:
+            if self.__botAdmins[i, "name"] == "Giulio Coa":
+                return self.__botAdmins[i, "id"]
+
+    @property
+    def chats(self) -> pandas.DataFrame:
+        return self.__chat
 
     @chats.setter
-    def chats(self, chatId: int):
-        self.__chatAllowed.append(chatId)
+    def chats(self, chat: dict):
+        self.__chat = self.__chat.append(chat, ignore_index=True)
 
     @property
     def hash(self) -> str:
@@ -37,8 +45,8 @@ class Constants:
     def loadCreators(self):
         with open("database.json", "r") as users:
             users = json.load(users)
-            self.__botCreators = pandas.DataFrame(data=users["creators"], columns=list(["id", "nickname"]))
-            self.__chatAllowed = users["chat"]
+        self.__botAdmins = pandas.DataFrame(data=users["creators"], columns=list(["id", "nickname"]))
+        self.__chat = pandas.DataFrame(data=users["chat"], columns=list(["id", "name"]))
 
     @property
     def log(self) -> int:
