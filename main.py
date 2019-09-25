@@ -67,7 +67,7 @@ def replyInlineKeyboard(client: Client, message: Message):
     keyboard = list([list([InlineKeyboardButton("Text", url="Text")]), ...])
     keyboard = InlineKeyboardMarkup(keyboard)
     message.reply_text("Text", parse_mode="markdown", disable_web_page_preview=True, reply_markup=keyboard)
-    log(client, "I sent a ReplyKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
+    log(client, "I sent an InlineKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
 @app.on_message(Filters.command("retrieve", prefix=list(["/", "!", "."])) & Filters.user(adminsIdList))
