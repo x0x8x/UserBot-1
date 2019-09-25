@@ -72,7 +72,7 @@ def replyInlineKeyboard(client: Client, message: Message):
     log(client, "I sent an InlineKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
-@app.on_message(Filters.command("retrieve", prefix=list(["/", "!", "."])) & Filters.user(adminsIdList))
+@app.on_message(Filters.command("retrieve", prefix=list(["/", "!", "."])) & Filters.user(constants.creator))
 def retrieveChatId(client: Client, message: Message):
     global constants, chatIdList
 
