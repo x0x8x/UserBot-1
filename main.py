@@ -1,3 +1,5 @@
+import json
+
 from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup, \
     Message
 
@@ -6,13 +8,12 @@ from modules import Constants
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."])
 constants.loadCreators()
-adminsIdList = constants.admins.to_json(orient="columns")
+adminsIdList = json.load(constants.admins.to_json(orient="columns"))
 adminsIdList = set(adminsIdList["id"].values())
-chatIdList = constants.chats.to_json(orient="columns")
+chatIdList = json.load(constants.chats.to_json(orient="columns"))
 chatIdList = set(chatIdList["id"].values())
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="",
              last_name="")
-app.set_parse_mode("markdown")
 
 
 @app.on_message(Filters.chat(chatIdList) & Filters.service)
@@ -75,3 +76,5 @@ def retrieveChatId(client: Client, message: Message):
 
 log(logging="Started serving ...")
 app.run()
+log(logging="Setted the markup syntax")
+app.set_parse_mode("markdown")
