@@ -12,6 +12,7 @@ chatIdList = constants.chats.to_json(orient="columns")
 chatIdList = set(chatIdList["id"].values())
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="",
              last_name="")
+app.set_parse_mode("markdown")
 
 
 @app.on_message(Filters.chat(chatIdList) & Filters.service)
@@ -40,9 +41,9 @@ def log(client: Client = None, logging: str = ""):
         if initialLog is not None:
             # noinspection PyTypeChecker
             for msg in initialLog:
-                client.send_message(constants.log, msg, parse_mode="markdown")
+                client.send_message(constants.log, msg)
             initialLog = None
-        client.send_message(constants.log, logging, parse_mode="markdown")
+        client.send_message(constants.log, logging)
     else:
         initialLog.append(logging)
 
@@ -57,7 +58,7 @@ def replyInlineKeyboard(client: Client, message: Message):
     message.reply_chat_action("typing")
     keyboard = list([list([InlineKeyboardButton("Text", url="Text")]), ...])
     keyboard = InlineKeyboardMarkup(keyboard)
-    message.reply_text("Text", parse_mode="markdown", disable_web_page_preview=True, reply_markup=keyboard)
+    message.reply_text("Text", disable_web_page_preview=True, reply_markup=keyboard)
     log(client, "I sent an InlineKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
