@@ -1,5 +1,3 @@
-import json
-
 from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup, \
     Message
 
@@ -8,9 +6,9 @@ from modules import Constants
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."])
 constants.loadCreators()
-adminsIdList = json.load(constants.admins.to_json(orient="columns"))
+adminsIdList = dict(constants.admins.to_json(orient="columns"))
 adminsIdList = set(adminsIdList["id"].values())
-chatIdList = json.load(constants.chats.to_json(orient="columns"))
+chatIdList = dict(constants.chats.to_json(orient="columns"))
 chatIdList = set(chatIdList["id"].values())
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="",
              last_name="")
