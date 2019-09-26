@@ -68,7 +68,7 @@ def retrieveChatId(client: Client, message: Message):
     if message.chat.id not in chatIdList:
         constants.chats = dict({"id": message.chat.id, "name": message.chat.title})
         message.delete()
-        chatIdList.append(message.chat.id)
+        chatIdList.add(message.chat.id)
         log(client, "I added " + message.chat.title + " to the list of allowed chat at " + constants.now() + ".")
 
 
