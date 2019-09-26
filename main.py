@@ -1,5 +1,5 @@
 from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup, \
-    KeyboardButton, Message, ReplyKeyboardMarkup
+    Message
 
 from modules import Constants
 
@@ -45,17 +45,6 @@ def log(client: Client = None, logging: str = ""):
         client.send_message(constants.log, logging, parse_mode="markdown")
     else:
         initialLog.append(logging)
-
-
-@app.on_message(Filters.chat(chatIdList) & Filters.user(adminsIdList))
-def replyKeyboard(client: Client, message: Message):
-    global constants
-
-    message.reply_chat_action("typing")
-    keyboard = list([list([KeyboardButton("Text")]), ...])
-    keyboard = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
-    message.reply_text("Text", parse_mode="markdown", disable_web_page_preview=True, reply_markup=keyboard)
-    log(client, "I sent a ReplyKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
 @app.on_message(Filters.chat(chatIdList) & Filters.user(adminsIdList))
