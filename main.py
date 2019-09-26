@@ -7,9 +7,9 @@ constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."])
 constants.loadCreators()
 adminsIdList = constants.admins.to_json(orient="columns")
-adminsIdList = list(adminsIdList["id"].values())
+adminsIdList = set(adminsIdList["id"].values())
 chatIdList = constants.chats.to_json(orient="columns")
-chatIdList = list(chatIdList["id"].values())
+chatIdList = set(chatIdList["id"].values())
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="",
              last_name="")
 
