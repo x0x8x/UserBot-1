@@ -6,10 +6,14 @@ from modules import Constants
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."])
 constants.loadCreators()
-adminsIdList = dict(constants.admins.to_json(orient="columns"))
-adminsIdList = set(adminsIdList["id"].values())
-chatIdList = dict(constants.chats.to_json(orient="columns"))
-chatIdList = set(chatIdList["id"].values())
+adminsIdList = constants.admins.to_json(orient="columns")
+adminsIdList = adminsIdList[len("{\"id\":"):adminsIdList.index("}") + 1]
+adminsIdList = dict(adminsIdList)
+adminsIdList = set(adminsIdList.values())
+chatIdList = constants.chats.to_json(orient="columns")
+chatIdList = chatIdList[len("{\"id\":"):chatIdList.index("}") + 1]
+chatIdList = dict(chatIdList)
+chatIdList = set(chatIdList.values())
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="",
              last_name="")
 
