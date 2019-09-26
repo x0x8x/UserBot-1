@@ -65,7 +65,7 @@ def replyInlineKeyboard(client: Client, message: Message):
 def retrieveChatId(client: Client, message: Message):
     global constants, chatIdList
 
-    if message.chat.id not in constants.chats:
+    if message.chat.id not in chatIdList:
         constants.chats = dict({"id": message.chat.id, "name": message.chat.title})
         message.delete()
         chatIdList.append(message.chat.id)
