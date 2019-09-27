@@ -85,7 +85,7 @@ def retrieveChatId(client: Client, message: Message):
         log(client, "I added " + message.chat.title + " to the list of allowed chat at " + constants.now() + ".")
 
 
-log(logging="Started serving ...")
-app.run()
 log(logging="Setted the markup syntax")
 app.set_parse_mode("markdown")
+log(logging="Started serving ...")
+app.run()
