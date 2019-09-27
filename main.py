@@ -6,14 +6,22 @@ from modules import Constants
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."])
 constants.loadCreators()
-adminsIdList = constants.admins.to_json(orient="columns")
-adminsIdList = adminsIdList[len("{\"id\":"):adminsIdList.index("}") + 1]
-adminsIdList = dict(adminsIdList)
-adminsIdList = set(adminsIdList.values())
-chatIdList = constants.chats.to_json(orient="columns")
-chatIdList = chatIdList[len("{\"id\":"):chatIdList.index("}") + 1]
-chatIdList = dict(chatIdList)
-chatIdList = set(chatIdList.values())
+adminsIdList = set()
+i = constants.admins.to_json(orient="columns")
+i = i[len("{\"id\":{"):i.index("}")]
+i = i.split(",")
+i = list(map(lambda n: n.split(":"), i))
+i = list(map(lambda n: dict({n[0]: n[1]}), i))
+i = list(map(lambda n: list(n.values()), i))
+list(map(lambda n: list(map(lambda m: adminsIdList.add(m), n)), i))
+chatIdList = set()
+i = constants.admins.to_json(orient="columns")
+i = i[len("{\"id\":{"):i.index("}")]
+i = i.split(",")
+i = list(map(lambda n: n.split(":"), i))
+i = list(map(lambda n: dict({n[0]: n[1]}), i))
+i = list(map(lambda n: list(n.values()), i))
+list(map(lambda n: list(map(lambda m: chatIdList.add(m), n)), i))
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="",
              last_name="")
 
