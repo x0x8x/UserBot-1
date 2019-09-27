@@ -23,8 +23,8 @@ class Constants:
         rows = self.__botAdmins.shape[0]
         rows = range(rows)
         for i in rows:
-            if self.__botAdmins[i, "name"] == "Giulio Coa":
-                return self.__botAdmins[i, "id"]
+            if self.__botAdmins.at[i, "name"] == "Giulio Coa":
+                return self.__botAdmins.at[i, "id"]
 
     @property
     def chats(self) -> pandas.DataFrame:
