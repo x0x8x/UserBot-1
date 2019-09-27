@@ -27,7 +27,7 @@ chatIdList = list(chatIdList)
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
 
 
-@app.on_message(Filters.chat(chatIdList) & Filters.service)
+@app.on_message((Filters.chat(chatIdList) | Filters.chat("me")) & Filters.service)
 def automaticRemovalStatus(client: Client, message: Message):
     global constants
 
@@ -38,7 +38,7 @@ def automaticRemovalStatus(client: Client, message: Message):
     log(client, "I removed a status message from the " + message.chat.title + " at " + constants.now() + ".")
 
 
-@app.on_message(Filters.chat(chatIdList) & Filters.user(adminsIdList))
+@app.on_message((Filters.chat(chatIdList) | Filters.chat("me")) & Filters.user(adminsIdList))
 def functions(client: Client, message: Message):
     global constants
 
@@ -60,7 +60,7 @@ def log(client: Client = None, logging: str = ""):
         initialLog.append(logging)
 
 
-@app.on_message(Filters.chat(chatIdList) & Filters.user(adminsIdList))
+@app.on_message((Filters.chat(chatIdList) | Filters.chat("me")) & Filters.user(adminsIdList))
 def replyInlineKeyboard(client: Client, message: Message):
     """
         Inline button
