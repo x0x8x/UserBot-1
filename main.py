@@ -14,6 +14,7 @@ i = list(map(lambda n: n.split(":"), i))
 i = list(map(lambda n: dict({n[0]: n[1]}), i))
 i = list(map(lambda n: list(n.values()), i))
 list(map(lambda n: list(map(lambda m: adminsIdList.add(m), n)), i))
+adminsIdList = list(adminsIdList)
 chatIdList = set()
 i = constants.admins.to_json(orient="columns")
 i = i[len("{\"id\":{"):i.index("}")]
@@ -22,6 +23,7 @@ i = list(map(lambda n: n.split(":"), i))
 i = list(map(lambda n: dict({n[0]: n[1]}), i))
 i = list(map(lambda n: list(n.values()), i))
 list(map(lambda n: list(map(lambda m: chatIdList.add(m), n)), i))
+chatIdList = list(chatIdList)
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
 
 
