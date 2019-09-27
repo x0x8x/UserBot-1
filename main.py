@@ -22,8 +22,7 @@ i = list(map(lambda n: n.split(":"), i))
 i = list(map(lambda n: dict({n[0]: n[1]}), i))
 i = list(map(lambda n: list(n.values()), i))
 list(map(lambda n: list(map(lambda m: chatIdList.add(m), n)), i))
-app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber, first_name="",
-             last_name="")
+app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
 
 
 @app.on_message(Filters.chat(chatIdList) & Filters.service)
