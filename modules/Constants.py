@@ -45,7 +45,7 @@ class Constants:
     def loadCreators(self):
         with open("database.json", "r") as users:
             users = json.load(users)
-        self.__botAdmins = pandas.DataFrame(data=users["admins"], columns=list(["id", "nickname"]))
+        self.__botAdmins = pandas.DataFrame(data=users["admins"], columns=list(["id", "name"]))
         self.__chat = pandas.DataFrame(data=users["chat"], columns=list(["id", "name"]))
 
     @property
