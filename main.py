@@ -26,7 +26,7 @@ chatIdList = list(chatIdList)
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
 
 
-@app.on_message((Filters.chat(chatIdList) | Filters.chat("me")) & Filters.service)
+@app.on_message(Filters.chat(chatIdList) & Filters.service)
 def automaticRemovalStatus(client: Client, message: Message):
     global constants
 
@@ -37,7 +37,7 @@ def automaticRemovalStatus(client: Client, message: Message):
     log(client, "I removed a status message from the " + message.chat.title + " at " + constants.now() + ".")
 
 
-@app.on_message((Filters.chat(chatIdList) | Filters.chat("me")) & Filters.user(adminsIdList))
+@app.on_message(Filters.chat(chatIdList) & Filters.user(adminsIdList))
 def functions(client: Client, message: Message):
     global constants
 
