@@ -47,7 +47,7 @@ class Constants:
         rows = self.__botAdmins.shape[0]
         rows = range(rows)
         for i in rows:
-            if self.__botAdmins.at[i, "name"] == "Giulio Coa":
+            if self.__botAdmins.at[i, "name"] == "":
                 self.__creator = self.__botAdmins.at[i, "id"]
 
     @property
