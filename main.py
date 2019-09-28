@@ -15,7 +15,7 @@ i = list(map(lambda n: list(n.values()), i))
 list(map(lambda n: list(map(lambda m: adminsIdList.add(m), n)), i))
 adminsIdList = list(adminsIdList)
 chatIdList = set()
-i = constants.admins.to_json(orient="columns")
+i = constants.chats.to_json(orient="columns")
 i = i[len("{\"id\":{"):i.index("}")]
 i = i.split(",")
 i = list(map(lambda n: n.split(":"), i))
