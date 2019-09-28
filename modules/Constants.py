@@ -12,6 +12,7 @@ class Constants:
         self.__botLog = -1001234567890
         self.__botAdmins = None
         self.__chat = None
+        self.__creator = 0
         self.__phoneNumber = "PHONE NUMBER WITH THE INTERNATIONAL CODE AND WITHOUT THE +"
 
     @property
@@ -20,11 +21,7 @@ class Constants:
 
     @property
     def creator(self) -> int:
-        rows = self.__botAdmins.shape[0]
-        rows = range(rows)
-        for i in rows:
-            if self.__botAdmins.at[i, "name"] == "Giulio Coa":
-                return self.__botAdmins.at[i, "id"]
+        return self.__creator
 
     @property
     def chats(self) -> pandas.DataFrame:
@@ -47,6 +44,11 @@ class Constants:
             users = json.load(users)
         self.__botAdmins = pandas.DataFrame(data=users["admins"], columns=list(["id", "name"]))
         self.__chat = pandas.DataFrame(data=users["chat"], columns=list(["id", "name"]))
+        rows = self.__botAdmins.shape[0]
+        rows = range(rows)
+        for i in rows:
+            if self.__botAdmins.at[i, "name"] == "Giulio Coa":
+                self.__creator = self.__botAdmins.at[i, "id"]
 
     @property
     def log(self) -> int:
