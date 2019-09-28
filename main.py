@@ -1,5 +1,4 @@
-from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup, \
-    Message
+from pyrogram import Client, Filters, Message
 
 from modules import Constants
 
@@ -58,20 +57,6 @@ def log(client: Client = None, logging: str = ""):
         client.send_message(constants.log, logging)
     else:
         initialLog.append(logging)
-
-
-@app.on_message((Filters.chat(chatIdList) | Filters.chat("me")) & Filters.user(adminsIdList))
-def replyInlineKeyboard(client: Client, message: Message):
-    """
-        Inline button
-    """
-    global constants
-
-    message.reply_chat_action("typing")
-    keyboard = list([list([InlineKeyboardButton("Text", url="Text")]), ...])
-    keyboard = InlineKeyboardMarkup(keyboard)
-    message.reply_text("Text", disable_web_page_preview=True, reply_markup=keyboard)
-    log(client, "I sent an InlineKeyboard to @" + message.from_user.username + " at " + constants.now() + ".")
 
 
 @app.on_message(Filters.command("retrieve", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
