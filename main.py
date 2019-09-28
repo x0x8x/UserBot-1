@@ -66,7 +66,7 @@ def log(client: Client = None, logging: str = ""):
 def retrieveChatId(client: Client, message: Message):
     global constants, chatIdList
 
-    if message.chat.id not in chatIdList:
+    if message.chat.id not in chatIdList and message.chat.id != constants.creator:
         constants.chats = dict({"id": message.chat.id, "name": message.chat.title})
         chatIdList = set(chatIdList)
         chatIdList.add(message.chat.id)
