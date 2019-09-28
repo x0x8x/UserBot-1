@@ -37,7 +37,7 @@ def automaticRemovalStatus(client: Client, message: Message):
         Removing the status message
     """
     message.delete()
-    log(client, "I removed a status message from the " + message.chat.title + " at " + constants.now() + ".")
+    log(client, "I removed a status message from the {0} at {1}.".format(message.chat.title, constants.now()))
 
 
 @app.on_message(Filters.chat(chatIdList) & Filters.user(adminsIdList))
@@ -72,8 +72,7 @@ def retrieveChatId(client: Client, message: Message):
         chatIdList.add(message.chat.id)
         chatIdList = list(chatIdList)
         message.delete()
-        log(client, "@giulioCoaInCamelCase\nI added " + message.chat.title + " to the list of allowed chat at " +
-            constants.now() + ".")
+        log(client, "I added {0} to the list of allowed chat at {1}.".format(message.chat.title, constants.now()))
 
 
 log(logging="Setted the markup syntax")
