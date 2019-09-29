@@ -28,13 +28,15 @@ class Constants:
         return self.__chat
 
     @chats.setter
-    def chats(self, chat: dict):
-        self.__chat = self.__chat.append(chat, ignore_index=True)
+    def chats(self, newChat: dict):
+        self.__chat = self.__chat.append(newChat, ignore_index=True)
+        element = "{\"admins\":" + self.__botAdmins.to_json(orient="records") + ",\"chat\":" + \
+                  self.__chat.to_json(orient="records") + "}"
         """
             Saving the database
         """
-        with open("database.json", "w") as element:
-            element.write(self.__chat.to_json(orient="records"))
+        with open("database.json", "w") as users:
+            users.write(element)
 
     @property
     def hash(self) -> str:
@@ -49,12 +51,12 @@ class Constants:
             Reading the database
         """
         with open("database.json", "r") as users:
-            users = json.load(users)
-        """
-            Setting the database
-        """
-        self.__botAdmins = pandas.DataFrame(data=users["admins"], columns=list(["id", "name"]))
-        self.__chat = pandas.DataFrame(data=users["chat"], columns=list(["id", "name"]))
+            file = json.load(users)
+            """
+                Setting the database
+            """
+            self.__botAdmins = pandas.DataFrame(data=file["admins"], columns=list(["id", "name"]))
+            self.__chat = pandas.DataFrame(data=file["chat"], columns=list(["id", "name"]))
         """
             Setting the parameters
         """

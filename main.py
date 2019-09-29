@@ -3,8 +3,16 @@ from pyrogram import Client, Filters, Message
 from modules import Constants
 
 constants = Constants.Constants()
-initialLog = list(["Initializing the Admins ...", "Admins initializated\nInitializing the Client ..."])
+initialLog = list(["Initializing the Admins ...", "Admins initializated\nSetting the admins list ...",
+                   "Admins setted\nSetting the chats list ...", "Chats initializated\nInitializing the Client ..."])
+"""
+    Initializing the Admins ...
+"""
 constants.loadCreators()
+"""
+    Admins initializated
+    Setting the admins list ...
+"""
 adminsIdList = set()
 i = constants.admins.to_json(orient="columns")
 i = i[len("{\"id\":{"):i.index("}")]
@@ -14,6 +22,10 @@ i = list(map(lambda n: dict({n[0]: n[1]}), i))
 i = list(map(lambda n: list(n.values()), i))
 list(map(lambda n: list(map(lambda m: adminsIdList.add(int(m)), n)), i))
 adminsIdList = list(adminsIdList)
+"""
+    Admins setted
+    Setting the chats list ...
+"""
 chatIdList = set()
 i = constants.chats.to_json(orient="columns")
 i = i[len("{\"id\":{"):i.index("}")]
@@ -24,7 +36,11 @@ i = list(map(lambda n: list(n.values()), i))
 list(map(lambda n: list(map(lambda m: chatIdList.add(int(m)), n)), i))
 chatIdList = list(chatIdList)
 chatIdList.append("me")
-app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
+"""
+    Chats initializated
+    Initializing the Client ...
+"""
+app = Client("GiuliosUserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
 
 
 @app.on_message(Filters.chat(chatIdList) & Filters.service)
@@ -35,7 +51,7 @@ def automaticRemovalStatus(client: Client, message: Message):
     """
         Removing the status message
     """
-    message.delete()
+    message.delete(revoke=True)
     log(client, "I removed a status message from the {0} at {1}.".format(title, constants.now()))
 
 
@@ -48,7 +64,7 @@ def checkList(client: Client, message: Message):
     """
         Removing the message
     """
-    message.delete()
+    message.delete(revoke=True)
     """
         Sending the output
     """
@@ -85,14 +101,16 @@ def retrieveChatId(client: Client, message: Message):
         """
             Removing the message
         """
-        message.delete()
+        message.delete(revoke=True)
         """
             Adding the chat to the database
         """
-        constants.chats = dict({"id": id, "name": title})
+        before = len(chatIdList)
         chatIdList = set(chatIdList)
         chatIdList.add(id)
         chatIdList = list(chatIdList)
+        if len(chatIdList) != before:
+            constants.chats = dict({"id": id, "name": title})
         log(client, "I added {0} to the list of allowed chat at {1}.".format(title, constants.now()))
 
 
