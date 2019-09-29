@@ -7,13 +7,13 @@ import pandas
 class Constants:
 
     def __init__(self):
-        self.__appHash = "APP'S HASH"
+        self.__appHash = "HASH FORM https://my.telegram.org/apps"
         self.__appId = 1234567890
         self.__botLog = -1001234567890
         self.__botAdmins = None
         self.__chat = None
         self.__creator = 0
-        self.__phoneNumber = "PHONE NUMBER WITH THE INTERNATIONAL CODE AND WITHOUT THE +"
+        self.__phoneNumber = "PHONE NUMBER WITH INTERNATIONAL PREFIX AND WITHOUT THE + SIGN"
 
     @property
     def admins(self) -> pandas.DataFrame:
@@ -30,6 +30,11 @@ class Constants:
     @chats.setter
     def chats(self, chat: dict):
         self.__chat = self.__chat.append(chat, ignore_index=True)
+        """
+            Saving the database
+        """
+        with open("database.json", "w") as element:
+            element.write(self.__chat.to_json(orient="records"))
 
     @property
     def hash(self) -> str:
@@ -40,10 +45,19 @@ class Constants:
         return self.__appId
 
     def loadCreators(self):
+        """
+            Reading the database
+        """
         with open("database.json", "r") as users:
             users = json.load(users)
+        """
+            Setting the database
+        """
         self.__botAdmins = pandas.DataFrame(data=users["admins"], columns=list(["id", "name"]))
         self.__chat = pandas.DataFrame(data=users["chat"], columns=list(["id", "name"]))
+        """
+            Setting the parameters
+        """
         rows = self.__botAdmins.shape[0]
         rows = range(rows)
         for i in rows:

@@ -31,11 +31,12 @@ app = Client("UserBot", constants.id, constants.hash, phone_number=constants.pho
 def automaticRemovalStatus(client: Client, message: Message):
     global constants
 
-    log(client, "I removed a status message from the {0} at {1}.".format(message.chat.title, constants.now()))
+    title = message.chat.title
     """
         Removing the status message
     """
     message.delete()
+    log(client, "I removed a status message from the {0} at {1}.".format(title, constants.now()))
 
 
 @app.on_message(
@@ -79,18 +80,20 @@ def retrieveChatId(client: Client, message: Message):
     global constants, chatIdList
 
     if message.chat.id not in chatIdList and message.chat.id != constants.creator:
-        """
-            Adding the chat to the database
-        """
-        constants.chats = dict({"id": message.chat.id, "name": message.chat.title})
-        chatIdList = set(chatIdList)
-        chatIdList.add(message.chat.id)
-        chatIdList = list(chatIdList)
-        log(client, "I added {0} to the list of allowed chat at {1}.".format(message.chat.title, constants.now()))
+        title = message.chat.title
+        id = message.chat.id
         """
             Removing the message
         """
         message.delete()
+        """
+            Adding the chat to the database
+        """
+        constants.chats = dict({"id": id, "name": title})
+        chatIdList = set(chatIdList)
+        chatIdList.add(id)
+        chatIdList = list(chatIdList)
+        log(client, "I added {0} to the list of allowed chat at {1}.".format(title, constants.now()))
 
 
 log(logging="Setted the markup syntax")
