@@ -40,7 +40,7 @@ chatIdList.append("me")
     Chats initializated
     Initializing the Client ...
 """
-app = Client("GiuliosUserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
+app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
 
 
 @app.on_message(Filters.chat(chatIdList) & Filters.service)
@@ -58,7 +58,7 @@ def automaticRemovalStatus(client: Client, message: Message):
 @app.on_message(
     Filters.command("check", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(
         chatIdList))
-def checkList(client: Client, message: Message):
+def checkDatabase(client: Client, message: Message):
     global adminsIdList, constants, chatIdList
 
     """
@@ -68,12 +68,21 @@ def checkList(client: Client, message: Message):
     """
         Sending the output
     """
-    print("{0}".format(adminsIdList))
+    element = constants.admins.to_json(orient="records")
+    element = element.replace(":", ": ")
+    element = element.replace(",", ", ")
+    print("{0}".format(element))
+    print("\n{0}\n".format(adminsIdList))
     for j in adminsIdList:
         print("\t{0} - {1}".format(j, type(j)))
-    print("\n\n{0}".format(chatIdList))
+    element = constants.chats.to_json(orient="records")
+    element = element.replace(":", ": ")
+    element = element.replace(",", ", ")
+    print("\n{0}".format(element))
+    print("\n{0}\n".format(chatIdList))
     for j in chatIdList:
         print("\t{0} - {1}".format(j, type(j)))
+    print("\n\n")
     log(client, "I have checked the admin and the chat list at {0}.".format(constants.now()))
 
 
@@ -97,6 +106,7 @@ def retrieveChatId(client: Client, message: Message):
 
     if message.chat.id not in chatIdList and message.chat.id != constants.creator:
         title = message.chat.title
+        text = "The chat {0} is already present in the list of allowed chat.".format(title)
         id = message.chat.id
         """
             Removing the message
@@ -111,7 +121,8 @@ def retrieveChatId(client: Client, message: Message):
         chatIdList = list(chatIdList)
         if len(chatIdList) != before:
             constants.chats = dict({"id": id, "name": title})
-        log(client, "I added {0} to the list of allowed chat at {1}.".format(title, constants.now()))
+            text = "I added {0} to the list of allowed chat at {1}.".format(title, constants.now())
+        log(client, text)
 
 
 log(logging="Setted the markup syntax")
