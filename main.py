@@ -1,3 +1,5 @@
+import subprocess
+
 from pyrogram import Client, Filters, Message
 
 from modules import Constants
@@ -84,6 +86,43 @@ def checkDatabase(client: Client, message: Message):
         print("\t{0} - {1}".format(j, type(j)))
     print("\n\n")
     log(client, "I have checked the admin and the chat list at {0}.".format(constants.now()))
+
+
+@app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
+def evaluation(_, message: Message):
+    command = message.command
+    command.pop(0)
+    command = " ".join(command)
+    result = eval(command)
+    message.edit_text("**Expression:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result))
+
+
+@app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
+def execution(_, message: Message):
+    command = message.command
+    command.pop(0)
+    command = " ".join(command)
+    result = subprocess.check_output(command, shell=True)
+    message.edit_text("**Command:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result))
+
+
+@app.on_message(
+    Filters.command("help", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(
+        chatIdList))
+def help(client: Client, message: Message):
+    global constants
+
+    message.reply_chat_action("typing")
+    """
+        Sending the output
+    """
+    message.reply_text("The commands are:\n\t`/check`\n\t`/evaluate`\n\t`/exec`\n\t`/help`\n\t`/retrieve`", quote=False,
+                       disable_notification=True)
+    """
+        Removing the message
+    """
+    message.delete(revoke=True)
+    log(client, "I sent the help at {0}.".format(constants.now()))
 
 
 def log(client: Client = None, logging: str = ""):
