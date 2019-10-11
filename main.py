@@ -3,6 +3,7 @@ import subprocess
 
 import schedule
 from pyrogram import Client, Filters, Message
+from pyrogram.api.functions.help import GetConfig
 
 from modules import Constants
 
@@ -91,13 +92,6 @@ def checkDatabase(client: Client, message: Message):
     log(client, "I have checked the admin and the chat list at {0}.".format(constants.now()))
 
 
-@app.on_disconnect()
-def error():
-    global constants
-
-    print("I encounter a DisconnectionError at {0}.".format(constants.now()))
-
-
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def evaluation(client: Client, message: Message):
     message.reply_chat_action("typing")
@@ -111,7 +105,12 @@ def evaluation(client: Client, message: Message):
     """
         Sending the output
     """
-    message.edit_text("**Expression:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result))
+    text = "**Expression:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result)
+    maxLength = client.send(GetConfig()).message_length_max
+    message.edit_text(text[:maxLength])
+    if len(text) >= maxLength:
+        for k in range(1, len(text), maxLength):
+            message.reply_text(text[k * maxLength:(k + 1) * maxLength])
     log(client, "I have evaluated the command `{0}` at {1}.".format(command, constants.now()))
 
 
@@ -127,9 +126,10 @@ def execution(client: Client, message: Message):
     """
         Execution of the command
     """
-    print("\n")
-    os.system(command)
-    print("\n")
+    if command == "clear":
+        print("\n")
+        os.system(command)
+        print("\n")
     result = subprocess.check_output(command, shell=True)
     result = result.decode("utf-8")
     if "\n" in result:
@@ -138,9 +138,9 @@ def execution(client: Client, message: Message):
         Sending the output
     """
     text = "**Command:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result)
-    maxLength = 4096
+    maxLength = client.send(GetConfig()).message_length_max
     message.edit_text(text[:maxLength])
-    if len(text) >= 4096:
+    if len(text) >= maxLength:
         for k in range(1, len(text), maxLength):
             message.reply_text(text[k * maxLength:(k + 1) * maxLength])
     log(client, "I have executed the command `{0}` at {1}.".format(command, constants.now()))
@@ -165,7 +165,7 @@ def help(client: Client, message: Message):
 def job(client: Client):
     global constants
 
-    log(client, "I do the job at {0}.".format(constants.now()))
+    log(client, "I do my job at {0}.".format(constants.now()))
 
 
 def log(client: Client = None, logging: str = ""):
