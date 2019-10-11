@@ -1,5 +1,7 @@
+import os
 import subprocess
 
+import schedule
 from pyrogram import Client, Filters, Message
 
 from modules import Constants
@@ -7,6 +9,7 @@ from modules import Constants
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nSetting the admins list ...",
                    "Admins setted\nSetting the chats list ...", "Chats initializated\nInitializing the Client ..."])
+scheduler = schedule.default_scheduler
 """
     Initializing the Admins ...
 """
@@ -45,7 +48,7 @@ chatIdList.append("me")
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
 
 
-@app.on_message(Filters.chat(chatIdList) & Filters.service)
+@app.on_message(Filters.service)
 def automaticRemovalStatus(client: Client, message: Message):
     global constants
 
@@ -54,7 +57,7 @@ def automaticRemovalStatus(client: Client, message: Message):
         Removing the status message
     """
     message.delete(revoke=True)
-    log(client, "I removed a status message from the {0} at {1}.".format(title, constants.now()))
+    log(client, "I removed a status message from the {0} chat at {1}.".format(title, constants.now()))
 
 
 @app.on_message(
@@ -88,22 +91,59 @@ def checkDatabase(client: Client, message: Message):
     log(client, "I have checked the admin and the chat list at {0}.".format(constants.now()))
 
 
+@app.on_disconnect()
+def error():
+    global constants
+
+    print("I encounter a DisconnectionError at {0}.".format(constants.now()))
+
+
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
-def evaluation(_, message: Message):
+def evaluation(client: Client, message: Message):
+    message.reply_chat_action("typing")
+    """
+        Extract the command
+    """
     command = message.command
     command.pop(0)
     command = " ".join(command)
     result = eval(command)
+    """
+        Sending the output
+    """
     message.edit_text("**Expression:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result))
+    log(client, "I have evaluated the command `{0}` at {1}.".format(command, constants.now()))
 
 
 @app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
-def execution(_, message: Message):
+def execution(client: Client, message: Message):
+    message.reply_chat_action("typing")
+    """
+        Extract the command
+    """
     command = message.command
     command.pop(0)
     command = " ".join(command)
+    """
+        Execution of the command
+    """
+    print("\n")
+    os.system(command)
+    print("\n")
     result = subprocess.check_output(command, shell=True)
-    message.edit_text("**Command:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result))
+    result = result.decode("utf-8")
+    if "\n" in result:
+        result = result.replace("\n", "`\n\t`")
+    """
+        Sending the output
+    """
+    text = "**Command:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result)
+    maxLength = 4096
+    message.edit_text(text[:maxLength])
+    if len(text) >= 4096:
+        for k in range(1, len(text), maxLength):
+            message.reply_text(text[k * maxLength:(k + 1) * maxLength])
+    log(client, "I have executed the command `{0}` at {1}.".format(command, constants.now()))
 
 
 @app.on_message(
@@ -116,13 +156,16 @@ def help(client: Client, message: Message):
     """
         Sending the output
     """
-    message.reply_text("The commands are:\n\t`/check`\n\t`/evaluate`\n\t`/exec`\n\t`/help`\n\t`/retrieve`", quote=False,
-                       disable_notification=True)
-    """
-        Removing the message
-    """
-    message.delete(revoke=True)
+    message.edit_text("The commands are:\n\t\t`{0}`\nThe prefixes for use this command are:\n\t\t`{1}`".format(
+        "`\n\t\t`".join(list(["check", "evaluate", "exec", "help", "retrieve"])),
+        "`\n\t\t`".join(list(["/", "!", "."]))))
     log(client, "I sent the help at {0}.".format(constants.now()))
+
+
+def job(client: Client):
+    global constants
+
+    log(client, "I do the job at {0}.".format(constants.now()))
 
 
 def log(client: Client = None, logging: str = ""):
@@ -143,14 +186,14 @@ def log(client: Client = None, logging: str = ""):
 def retrieveChatId(client: Client, message: Message):
     global constants, chatIdList
 
-    if message.chat.id not in chatIdList and message.chat.id != constants.creator:
-        title = message.chat.title
-        text = "The chat {0} is already present in the list of allowed chat.".format(title)
-        id = message.chat.id
-        """
-            Removing the message
-        """
-        message.delete(revoke=True)
+    title = message.chat.title
+    id = message.chat.id
+    text = "The chat {0} is already present in the list of allowed chat.".format(title)
+    """
+        Removing the message
+    """
+    message.delete(revoke=True)
+    if id not in chatIdList and id != constants.creator:
         """
             Adding the chat to the database
         """
@@ -161,10 +204,14 @@ def retrieveChatId(client: Client, message: Message):
         if len(chatIdList) != before:
             constants.chats = dict({"id": id, "name": title})
             text = "I added {0} to the list of allowed chat at {1}.".format(title, constants.now())
-        log(client, text)
+    log(client, text)
 
 
-log(logging="Setted the markup syntax")
+log(logging="Client initializated\nSetting the markup syntax ...")
 app.set_parse_mode("markdown")
-log(logging="Started serving ...")
+log(logging="Setted the markup syntax\nSetting the Job Queue ...")
+log(logging="Setted the Job Queue\nStarted serving ...")
 app.run()
+scheduler.every().monday.do(job, client=app)
+while True:
+    scheduler.run_pending()
