@@ -94,7 +94,6 @@ def checkDatabase(client: Client, message: Message):
 
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def evaluation(client: Client, message: Message):
-    message.reply_chat_action("typing")
     """
         Extract the command
     """
@@ -116,7 +115,6 @@ def evaluation(client: Client, message: Message):
 
 @app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def execution(client: Client, message: Message):
-    message.reply_chat_action("typing")
     """
         Extract the command
     """
@@ -127,9 +125,7 @@ def execution(client: Client, message: Message):
         Execution of the command
     """
     if command == "clear":
-        print("\n")
         os.system(command)
-        print("\n")
     result = subprocess.check_output(command, shell=True)
     result = result.decode("utf-8")
     if "\n" in result:
@@ -152,7 +148,6 @@ def execution(client: Client, message: Message):
 def help(client: Client, message: Message):
     global constants
 
-    message.reply_chat_action("typing")
     """
         Sending the output
     """
