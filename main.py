@@ -124,7 +124,7 @@ def execution(client: Client, message: Message):
     """
         Execution of the command
     """
-    if command == "clear":
+    if command == "clear" or command == "exit":
         os.system(command)
     result = subprocess.check_output(command, shell=True)
     result = result.decode("utf-8")
