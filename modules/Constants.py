@@ -64,7 +64,7 @@ class Constants:
         rows = range(rows)
         for i in rows:
             if self.__botAdmins.at[i, "name"] == "":
-                self.__creator = self.__botAdmins.at[i, "id"]
+                self.__creator = int(self.__botAdmins.at[i, "id"])
 
     @property
     def log(self) -> int:
