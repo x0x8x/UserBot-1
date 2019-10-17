@@ -51,14 +51,11 @@ app = Client("UserBot", constants.id, constants.hash, phone_number=constants.pho
 
 @app.on_message(Filters.service)
 def automaticRemovalStatus(client: Client, message: Message):
-    global constants
-
-    title = message.chat.title
     """
         Removing the status message
     """
     message.delete(revoke=True)
-    log(client, "I removed a status message from the {0} chat at {1}.".format(title, constants.now()))
+    client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(
@@ -77,19 +74,19 @@ def checkDatabase(client: Client, message: Message):
     element = constants.admins.to_json(orient="records")
     element = element.replace(":", ": ")
     element = element.replace(",", ", ")
-    print("{0}".format(element))
-    print("\n{0}\n".format(adminsIdList))
+    print("{}".format(element))
+    print("\n{}\n".format(adminsIdList))
     for j in adminsIdList:
-        print("\t{0} - {1}".format(j, type(j)))
+        print("\t{} - {}".format(j, type(j)))
     element = constants.chats.to_json(orient="records")
     element = element.replace(":", ": ")
     element = element.replace(",", ", ")
-    print("\n{0}".format(element))
-    print("\n{0}\n".format(chatIdList))
+    print("\n{}".format(element))
+    print("\n{}\n".format(chatIdList))
     for j in chatIdList:
-        print("\t{0} - {1}".format(j, type(j)))
+        print("\t{} - {}".format(j, type(j)))
     print("\n\n")
-    log(client, "I have checked the admin and the chat list at {0}.".format(constants.now()))
+    log(client, "I have checked the admin and the chat list at {}.".format(constants.now()))
 
 
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
@@ -104,13 +101,13 @@ def evaluation(client: Client, message: Message):
     """
         Sending the output
     """
-    text = "**Expression:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result)
+    text = "**Expression:**\n\t`{}`\n\n**Result:**\n\t`{}`".format(command, result)
     maxLength = client.send(GetConfig()).message_length_max
     message.edit_text(text[:maxLength])
     if len(text) >= maxLength:
         for k in range(1, len(text), maxLength):
-            message.reply_text(text[k * maxLength:(k + 1) * maxLength])
-    log(client, "I have evaluated the command `{0}` at {1}.".format(command, constants.now()))
+            message.reply_text(text[k:k + maxLength])
+    log(client, "I have evaluated the command `{}` at {}.".format(command, constants.now()))
 
 
 @app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
@@ -133,13 +130,13 @@ def execution(client: Client, message: Message):
     """
         Sending the output
     """
-    text = "**Command:**\n\t`{0}`\n\n**Result:**\n\t`{1}`".format(command, result)
+    text = "**Command:**\n\t`{}`\n\n**Result:**\n\t`{}`".format(command, result)
     maxLength = client.send(GetConfig()).message_length_max
     message.edit_text(text[:maxLength])
     if len(text) >= maxLength:
         for k in range(1, len(text), maxLength):
-            message.reply_text(text[k * maxLength:(k + 1) * maxLength])
-    log(client, "I have executed the command `{0}` at {1}.".format(command, constants.now()))
+            message.reply_text(text[k:k + maxLength])
+    log(client, "I have executed the command `{}` at {}.".format(command, constants.now()))
 
 
 @app.on_message(
@@ -148,19 +145,26 @@ def execution(client: Client, message: Message):
 def help(client: Client, message: Message):
     global constants
 
+    commands = list(["check",
+                     "evaluate",
+                     "exec",
+                     "help",
+                     "retrieve"
+                    ])
+    prefixes = list(["/",
+                     "!",
+                     "."
+                    ])
     """
         Sending the output
     """
-    message.edit_text("The commands are:\n\t\t`{0}`\nThe prefixes for use this command are:\n\t\t`{1}`".format(
-        "`\n\t\t`".join(list(["check", "evaluate", "exec", "help", "retrieve"])),
-        "`\n\t\t`".join(list(["/", "!", "."]))))
-    log(client, "I sent the help at {0}.".format(constants.now()))
+    message.edit_text("The commands are:\n\t\t`{}`\nThe prefixes for use this command are:\n\t\t`{}`".format(
+        "`\n\t\t`".join(bots), "`\n\t\t`".join(prefixes)))
+    log(client, "I sent the help at {}.".format(constants.now()))
 
 
 def job(client: Client):
-    global constants
-
-    log(client, "I do my job at {0}.".format(constants.now()))
+    log(client, "I have do my job at {}.".format(constants.now()))
 
 
 def log(client: Client = None, logging: str = ""):
@@ -168,11 +172,11 @@ def log(client: Client = None, logging: str = ""):
 
     if client is not None:
         if initialLog is not None:
-            # noinspection PyTypeChecker
             for msg in initialLog:
                 client.send_message(constants.log, msg)
             initialLog = None
         client.send_message(constants.log, logging)
+        client.send(UpdateStatus(offline=True))
     else:
         initialLog.append(logging)
 
@@ -183,7 +187,7 @@ def retrieveChatId(client: Client, message: Message):
 
     title = message.chat.title
     id = message.chat.id
-    text = "The chat {0} is already present in the list of allowed chat.".format(title)
+    text = "The chat {} is already present in the list of allowed chat.".format(title)
     """
         Removing the message
     """
@@ -198,7 +202,7 @@ def retrieveChatId(client: Client, message: Message):
         chatIdList = list(chatIdList)
         if len(chatIdList) != before:
             constants.chats = dict({"id": id, "name": title})
-            text = "I added {0} to the list of allowed chat at {1}.".format(title, constants.now())
+            text = "I added {} to the list of allowed chat at {}.".format(title, constants.now())
     log(client, text)
 
 
@@ -207,6 +211,6 @@ app.set_parse_mode("markdown")
 log(logging="Setted the markup syntax\nSetting the Job Queue ...")
 log(logging="Setted the Job Queue\nStarted serving ...")
 app.run()
-scheduler.every().monday.do(job, client=app)
+scheduler.every().day.at("13:00").do(job, client=app)
 while True:
     scheduler.run_pending()
