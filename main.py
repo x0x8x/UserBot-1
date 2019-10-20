@@ -1,5 +1,8 @@
 import os
+import random
 import subprocess
+import time
+from datetime import date
 
 import schedule
 from pyrogram import Client, Filters, Message
@@ -101,13 +104,13 @@ def evaluation(client: Client, message: Message):
     """
         Sending the output
     """
-    text = "**Expression:**\n\t`{}`\n\n**Result:**\n\t`{}`".format(command, result)
+    text = "<b>Espression:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
     maxLength = client.send(GetConfig()).message_length_max
     message.edit_text(text[:maxLength])
     if len(text) >= maxLength:
         for k in range(1, len(text), maxLength):
             message.reply_text(text[k:k + maxLength])
-    log(client, "I have evaluated the command `{}` at {}.".format(command, constants.now()))
+    log(client, "I have evaluated the command <code>{}<code> at {}.".format(command, constants.now()))
 
 
 @app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
@@ -130,13 +133,13 @@ def execution(client: Client, message: Message):
     """
         Sending the output
     """
-    text = "**Command:**\n\t`{}`\n\n**Result:**\n\t`{}`".format(command, result)
+    text = "<b>Command:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
     maxLength = client.send(GetConfig()).message_length_max
     message.edit_text(text[:maxLength])
     if len(text) >= maxLength:
         for k in range(1, len(text), maxLength):
             message.reply_text(text[k:k + maxLength])
-    log(client, "I have executed the command `{}` at {}.".format(command, constants.now()))
+    log(client, "I have executed the command <code>{}</code> at {}.".format(command, constants.now()))
 
 
 @app.on_message(
@@ -158,12 +161,15 @@ def help(client: Client, message: Message):
     """
         Sending the output
     """
-    message.edit_text("The commands are:\n\t\t`{}`\nThe prefixes for use this command are:\n\t\t`{}`".format(
-        "`\n\t\t`".join(bots), "`\n\t\t`".join(prefixes)))
+    message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t" +
+                      "\t<code>{}</code>".format("<code>\n\t\t</code>".join(bots),
+                                                 "<code>\n\t\t</code>".join(prefixes)))
     log(client, "I sent the help at {}.".format(constants.now()))
 
 
 def job(client: Client):
+    global constants
+
     log(client, "I have do my job at {}.".format(constants.now()))
 
 
@@ -186,28 +192,28 @@ def retrieveChatId(client: Client, message: Message):
     global constants, chatIdList
 
     title = message.chat.title
-    id = message.chat.id
+    identifier = message.chat.id
     text = "The chat {} is already present in the list of allowed chat.".format(title)
     """
         Removing the message
     """
     message.delete(revoke=True)
-    if id not in chatIdList and id != constants.creator:
+    if identifier not in chatIdList and identifier != constants.creator:
         """
             Adding the chat to the database
         """
         before = len(chatIdList)
         chatIdList = set(chatIdList)
-        chatIdList.add(id)
+        chatIdList.add(identifier)
         chatIdList = list(chatIdList)
         if len(chatIdList) != before:
-            constants.chats = dict({"id": id, "name": title})
+            constants.chats = dict({"id": identifier, "name": title})
             text = "I added {} to the list of allowed chat at {}.".format(title, constants.now())
     log(client, text)
 
 
 log(logging="Client initializated\nSetting the markup syntax ...")
-app.set_parse_mode("markdown")
+app.set_parse_mode("html")
 log(logging="Setted the markup syntax\nSetting the Job Queue ...")
 log(logging="Setted the Job Queue\nStarted serving ...")
 app.run()
