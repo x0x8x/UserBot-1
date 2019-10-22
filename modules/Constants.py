@@ -51,7 +51,7 @@ class Constants:
             Reading the database
         """
         with open("database.json", "r") as users:
-            files = json.loads(users.read())
+            files = json.load(users)
 		"""
 			Setting the database
 		"""
