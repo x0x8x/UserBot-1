@@ -51,12 +51,12 @@ class Constants:
             Reading the database
         """
         with open("database.json", "r") as users:
-            file = json.load(users)
-            """
-                Setting the database
-            """
-            self.__botAdmins = pandas.DataFrame(data=file["admins"], columns=list(["id", "name"]))
-            self.__chat = pandas.DataFrame(data=file["chat"], columns=list(["id", "name"]))
+            file = json.load(users.read())
+		"""
+			Setting the database
+		"""
+		self.__botAdmins = pandas.DataFrame(data=file["admins"], columns=list(["id", "name"]))
+		self.__chat = pandas.DataFrame(data=file["chat"], columns=list(["id", "name"]))
         """
             Setting the parameters
         """
