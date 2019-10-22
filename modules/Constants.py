@@ -73,8 +73,8 @@ class Constants:
     @staticmethod
     def now() -> str:
         timer = time.localtime()
-        return "{0}:{1}:{2} of {3}-{4}-{5}".format(timer.tm_hour, timer.tm_min, timer.tm_sec,
-                                                   timer.tm_mday, timer.tm_mon, timer.tm_year)
+        return "{}:{}:{} of {}-{}-{}".format(timer.tm_hour, timer.tm_min, timer.tm_sec,
+                                             timer.tm_mday, timer.tm_mon, timer.tm_year)
 
     @property
     def phoneNumber(self) -> str:
