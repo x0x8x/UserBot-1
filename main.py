@@ -7,6 +7,7 @@ from datetime import date
 import schedule
 from pyrogram import Client, Filters, Message
 from pyrogram.api.functions.help import GetConfig
+from pyrogram.api.functions.account import UpdateStatus
 
 from modules import Constants
 
@@ -129,7 +130,7 @@ def execution(client: Client, message: Message):
     result = subprocess.check_output(command, shell=True)
     result = result.decode("utf-8")
     if "\n" in result:
-        result = result.replace("\n", "`\n\t`")
+        result = result.replace("\n", "<code>\n\t</code>")
     """
         Sending the output
     """
@@ -161,16 +162,15 @@ def help(client: Client, message: Message):
     """
         Sending the output
     """
-    message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t" +
-                      "\t<code>{}</code>".format("<code>\n\t\t</code>".join(bots),
-                                                 "<code>\n\t\t</code>".join(prefixes)))
+    message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format(
+        "<code>\n\t\t</code>".join(bots), "<code>\n\t\t</code>".join(prefixes)))
     log(client, "I sent the help at {}.".format(constants.now()))
 
 
 def job(client: Client):
     global constants
 
-    log(client, "I have do my job at {}.".format(constants.now()))
+    log(client, "I\'ve done my job at {}.".format(constants.now()))
 
 
 def log(client: Client = None, logging: str = ""):
@@ -216,7 +216,7 @@ log(logging="Client initializated\nSetting the markup syntax ...")
 app.set_parse_mode("html")
 log(logging="Setted the markup syntax\nSetting the Job Queue ...")
 log(logging="Setted the Job Queue\nStarted serving ...")
-app.run()
-scheduler.every().day.at("13:00").do(job, client=app)
-while True:
-    scheduler.run_pending()
+scheduler.every().monday.at("13:30").do(job, client=app)
+with app:
+	while True:
+		scheduler.run_pending()

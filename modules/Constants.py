@@ -7,7 +7,7 @@ import pandas
 class Constants:
 
     def __init__(self):
-        self.__appHash = "HASH FORM https://my.telegram.org/apps"
+        self.__appHash = "HASH FROM https://my.telegram.org/apps"
         self.__appId = 1234567890
         self.__botLog = -1001234567890
         self.__botAdmins = None
