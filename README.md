@@ -1,3 +1,3 @@
 # UserBot
 
-UserBot created by [Giulio Coa](https://t.me/giulioCoaInCamelCase).
+The [Giulio Coa](https://t.me/giulioCoaInCamelCase)'s UserBot template, created by he-self.

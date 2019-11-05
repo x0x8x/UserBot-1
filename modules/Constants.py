@@ -7,13 +7,13 @@ import pandas
 class Constants:
 
     def __init__(self):
-        self.__appHash = "HASH FROM https://my.telegram.org/apps"
+        self.__appHash = "HASH"
         self.__appId = 1234567890
         self.__botLog = -1001234567890
         self.__botAdmins = None
         self.__chat = None
         self.__creator = 0
-        self.__phoneNumber = "PHONE NUMBER WITH INTERNATIONAL PREFIX AND WITHOUT THE + SIGN"
+        self.__phoneNumber = "NUMBER"
 
     @property
     def admins(self) -> pandas.DataFrame:
@@ -35,7 +35,7 @@ class Constants:
         """
             Saving the database
         """
-        with open("database.json", "w") as users:
+        with open("/home/giuliocoa/Documenti/gitHub/UserBot/database.json", "w") as users:
             users.write(element)
 
     @property
@@ -50,13 +50,13 @@ class Constants:
         """
             Reading the database
         """
-        with open("database.json", "r") as users:
+        with open("/home/giuliocoa/Documenti/gitHub/UserBot/database.json", "r") as users:
             files = json.load(users)
-		"""
-			Setting the database
-		"""
-		self.__botAdmins = pandas.DataFrame(data=files["admins"], columns=list(["id", "name"]))
-		self.__chat = pandas.DataFrame(data=files["chat"], columns=list(["id", "name"]))
+            """
+		Setting the database
+	    """
+            self.__botAdmins = pandas.DataFrame(data=files["admins"], columns=list(["id", "name"]))
+            self.__chat = pandas.DataFrame(data=files["chat"], columns=list(["id", "name"]))
         """
             Setting the parameters
         """
