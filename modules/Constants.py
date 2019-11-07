@@ -1,5 +1,6 @@
 import json
 import time
+import subprocess
 
 import pandas
 
@@ -35,7 +36,28 @@ class Constants:
         """
             Saving the database
         """
-        with open("~/Documenti/gitHub/UserBot/database.json", "w") as users:
+		pwd = str(subprocess.check_output("pwd", shell=True))
+		pwd = pwd.replace("b\'", "")
+		pwd = pwd.replace("\\n\'", "")
+		if pwd == "/":
+			path = "home/giuliocoa/Documents/gitHub/UserBot/database.json"
+		elif pwd == "/home":
+			path = "giuliocoa/Documents/gitHub/UserBot/database.json"
+		elif pwd == "/home/giuliocoa":
+			path = "Documents/gitHub/UserBot/database.json"
+		elif pwd == "/home/giuliocoa/Documents":
+			path = "gitHub/UserBot/database.json"
+		elif pwd == "/home/giuliocoa/Documents/gitHub":
+			path = "UserBot/database.json"
+		elif pwd == "/root":
+			path = "/home/giuliocoa/Documents/gitHub/UserBot/database.json"
+		elif pwd == "/data/data/com.termux/files/home":
+			path = "downloads/UserBot/database.json"
+		elif pwd == "/data/data/com.termux/files/home/downloads":
+			path = "UserBot/database.json"
+		else:
+			path = "database.json"
+		with open(path, "w") as users:
             users.write(element)
 
     @property
@@ -50,7 +72,28 @@ class Constants:
         """
             Reading the database
         """
-        with open("~/Documenti/gitHub/UserBot/database.json", "r") as users:
+		pwd = str(subprocess.check_output("pwd", shell=True))
+		pwd = pwd.replace("b\'", "")
+		pwd = pwd.replace("\\n\'", "")
+		if pwd == "/":
+			path = "home/giuliocoa/Documents/gitHub/UserBot/database.json"
+		elif pwd == "/home":
+			path = "giuliocoa/Documents/gitHub/UserBot/database.json"
+		elif pwd == "/home/giuliocoa":
+			path = "Documents/gitHub/UserBot/database.json"
+		elif pwd == "/home/giuliocoa/Documents":
+			path = "gitHub/UserBot/database.json"
+		elif pwd == "/home/giuliocoa/Documents/gitHub":
+			path = "UserBot/database.json"
+		elif pwd == "/root":
+			path = "/home/giuliocoa/Documents/gitHub/UserBot/database.json"
+		elif pwd == "/data/data/com.termux/files/home":
+			path = "downloads/UserBot/database.json"
+		elif pwd == "/data/data/com.termux/files/home/downloads":
+			path = "UserBot/database.json"
+		else:
+			path = "database.json"
+		with open(path, "r") as users:
             files = json.load(users)
             """
 		Setting the database
