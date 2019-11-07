@@ -35,7 +35,7 @@ class Constants:
         """
             Saving the database
         """
-        with open("/home/giuliocoa/Documenti/gitHub/UserBot/database.json", "w") as users:
+        with open("~/Documenti/gitHub/UserBot/database.json", "w") as users:
             users.write(element)
 
     @property
@@ -50,7 +50,7 @@ class Constants:
         """
             Reading the database
         """
-        with open("/home/giuliocoa/Documenti/gitHub/UserBot/database.json", "r") as users:
+        with open("~/Documenti/gitHub/UserBot/database.json", "r") as users:
             files = json.load(users)
             """
 		Setting the database

@@ -47,7 +47,7 @@ chatIdList.append("me")
     Chats initializated
     Initializing the Client ...
 """
-app = Client("GiuliosUserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
+app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
 
 
 @app.on_message(Filters.service)
