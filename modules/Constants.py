@@ -40,17 +40,17 @@ class Constants:
 		pwd = pwd.replace("b\'", "")
 		pwd = pwd.replace("\\n\'", "")
 		if pwd == "/":
-			path = "home/giuliocoa/Documents/gitHub/UserBot/database.json"
+			path = "home/USER/Documents/gitHub/UserBot/database.json"
 		elif pwd == "/home":
-			path = "giuliocoa/Documents/gitHub/UserBot/database.json"
-		elif pwd == "/home/giuliocoa":
+			path = "USER/Documents/gitHub/UserBot/database.json"
+		elif pwd == "/home/USER":
 			path = "Documents/gitHub/UserBot/database.json"
-		elif pwd == "/home/giuliocoa/Documents":
+		elif pwd == "/home/USER/Documents":
 			path = "gitHub/UserBot/database.json"
-		elif pwd == "/home/giuliocoa/Documents/gitHub":
+		elif pwd == "/home/USER/Documents/gitHub":
 			path = "UserBot/database.json"
 		elif pwd == "/root":
-			path = "/home/giuliocoa/Documents/gitHub/UserBot/database.json"
+			path = "/home/USER/Documents/gitHub/UserBot/database.json"
 		elif pwd == "/data/data/com.termux/files/home":
 			path = "downloads/UserBot/database.json"
 		elif pwd == "/data/data/com.termux/files/home/downloads":
@@ -76,17 +76,17 @@ class Constants:
 		pwd = pwd.replace("b\'", "")
 		pwd = pwd.replace("\\n\'", "")
 		if pwd == "/":
-			path = "home/giuliocoa/Documents/gitHub/UserBot/database.json"
+			path = "home/USER/Documents/gitHub/UserBot/database.json"
 		elif pwd == "/home":
-			path = "giuliocoa/Documents/gitHub/UserBot/database.json"
-		elif pwd == "/home/giuliocoa":
+			path = "USER/Documents/gitHub/UserBot/database.json"
+		elif pwd == "/home/USER":
 			path = "Documents/gitHub/UserBot/database.json"
-		elif pwd == "/home/giuliocoa/Documents":
+		elif pwd == "/home/USER/Documents":
 			path = "gitHub/UserBot/database.json"
-		elif pwd == "/home/giuliocoa/Documents/gitHub":
+		elif pwd == "/home/USER/Documents/gitHub":
 			path = "UserBot/database.json"
 		elif pwd == "/root":
-			path = "/home/giuliocoa/Documents/gitHub/UserBot/database.json"
+			path = "/home/USER/Documents/gitHub/UserBot/database.json"
 		elif pwd == "/data/data/com.termux/files/home":
 			path = "downloads/UserBot/database.json"
 		elif pwd == "/data/data/com.termux/files/home/downloads":
