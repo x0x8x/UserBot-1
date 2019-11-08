@@ -97,7 +97,10 @@ def evaluation(client: Client, message: Message):
     """
     command = message.command
     command.pop(0)
-    command = " ".join(command)
+    if len(command) == 0:
+		command = command.pop(0)
+	else:
+		command = " ".join(command)
     result = eval(command)
     """
         Sending the output
@@ -118,7 +121,10 @@ def execution(client: Client, message: Message):
     """
     command = message.command
     command.pop(0)
-    command = " ".join(command)
+    if len(command) == 0:
+		command = command.pop(0)
+	else:
+		command = " ".join(command)
     """
         Execution of the command
     """
