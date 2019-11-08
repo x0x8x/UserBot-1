@@ -166,7 +166,7 @@ def help(client: Client, message: Message):
         Sending the output
     """
     message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format(
-        "<code>\n\t\t</code>".join(bots), "<code>\n\t\t</code>".join(prefixes)))
+        "<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
     log(client, "I sent the help at {}.".format(constants.now()))
 
 
