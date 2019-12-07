@@ -1,8 +1,5 @@
 import os
-import random
 import subprocess
-import time
-from datetime import date
 
 import schedule
 from pyrogram import Client, Filters, Message
@@ -14,7 +11,6 @@ from modules import Constants
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nSetting the admins list ...",
 				   "Admins setted\nSetting the chats list ...", "Chats initializated\nInitializing the Client ..."])
-minute = 60
 scheduler = schedule.default_scheduler
 """
 	Initializing the Admins ...
@@ -52,6 +48,16 @@ chatIdList.append("me")
 	Initializing the Client ...
 """
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
+
+
+def job(client: Client, message: Message = None):
+	global constants, scheduler
+
+	"""
+		Removing the message
+	"""
+	scheduler.every().hour.do(subJob, client=client).tag("Temporary")
+	log(client, "I have done my job at {}.".format(constants.now()))
 
 
 @app.on_message(Filters.service)
@@ -92,6 +98,15 @@ def checkDatabase(client: Client, message: Message):
 		print("\t{} - {}".format(j, type(j)))
 	print("\n\n")
 	log(client, "I have checked the admin and the chat list at {}.".format(constants.now()))
+
+
+def subJob(client: Client):
+	global constants
+
+	"""
+		Sending the output
+	"""
+	log(client, "I have done my subJob at {}.".format(constants.now()))
 
 
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
@@ -174,18 +189,6 @@ def help(client: Client, message: Message):
 	log(client, "I sent the help at {}.".format(constants.now()))
 
 
-def job(client: Client):
-	global constants
-
-	log(client, "I have done my job at {}.".format(constants.now()))
-
-
-def subJob(client: Client):
-	global constants
-
-	log(client, "I have done my sub job at {}.".format(constants.now()))
-
-
 def log(client: Client = None, logging: str = ""):
 	global constants, initialLog
 
@@ -229,7 +232,7 @@ log(logging="Client initializated\nSetting the markup syntax ...")
 app.set_parse_mode("html")
 log(logging="Setted the markup syntax\nSetting the Job Queue ...")
 log(logging="Setted the Job Queue\nStarted serving ...")
-scheduler.every().monday.at("00:05").do(job, client=app)
+scheduler.every().day.at("00:00").do(job, client=app)
 with app:
 	while True:
 		scheduler.run_pending()
