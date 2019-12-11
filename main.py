@@ -273,7 +273,18 @@ def subJob(client: Client):
 	log(client, "I do my subJob at {}.".format(constants.now()))
 
 
-@app.on_message(~Filters.regex("\.check|\.evaluate|\.exec|\.help|\.retrieve|\.set") & Filters.user(adminsIdList))
+def unknownFilter():
+	def func(flt, message):
+		text = message.text or message.caption
+		if text:
+			message.matches = list(flt.p.finditer(text)) or None
+		if bool(message.matches) is False and text.startswith("."):
+			return True
+		return False
+	return Filters.create(func, "UnknownFilter", p=re.compile("\.check|\.evaluate|\.exec|\.help|\.retrieve|\.set", 0))
+
+
+@app.on_message(unknownFilter() & Filters.user(adminsIdList))
 def unknown(client: Client, message: Message):
 	global constants
 
