@@ -278,8 +278,8 @@ def unknownFilter():
 		text = message.text or message.caption
 		if text:
 			message.matches = list(flt.p.finditer(text)) or None
-		if bool(message.matches) is False and text.startswith("."):
-			return True
+			if bool(message.matches) is False and text.startswith("."):
+				return True
 		return False
 	return Filters.create(func, "UnknownFilter", p=re.compile("\.check|\.evaluate|\.exec|\.help|\.retrieve|\.set", 0))
 
