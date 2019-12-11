@@ -1,5 +1,8 @@
 import os
+import random
 import subprocess
+import time
+from datetime import date
 
 import schedule
 from pyrogram import Client, Filters, Message
@@ -9,8 +12,10 @@ from pyrogram.api.functions.account import UpdateStatus
 from modules import Constants
 
 constants = Constants.Constants()
+flags = dict({"": False})
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nSetting the admins list ...",
 				   "Admins setted\nSetting the chats list ...", "Chats initializated\nInitializing the Client ..."])
+minute = 60
 scheduler = schedule.default_scheduler
 """
 	Initializing the Admins ...
@@ -48,16 +53,6 @@ chatIdList.append("me")
 	Initializing the Client ...
 """
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
-
-
-def job(client: Client, message: Message = None):
-	global constants, scheduler
-
-	"""
-		Removing the message
-	"""
-	scheduler.every().hour.do(subJob, client=client).tag("Temporary")
-	log(client, "I have done my job at {}.".format(constants.now()))
 
 
 @app.on_message(Filters.service)
@@ -100,15 +95,6 @@ def checkDatabase(client: Client, message: Message):
 	log(client, "I have checked the admin and the chat list at {}.".format(constants.now()))
 
 
-def subJob(client: Client):
-	global constants
-
-	"""
-		Sending the output
-	"""
-	log(client, "I have done my subJob at {}.".format(constants.now()))
-
-
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def evaluation(client: Client, message: Message):
 	"""
@@ -129,6 +115,7 @@ def evaluation(client: Client, message: Message):
 	message.edit_text(text[:maxLength])
 	if len(text) >= maxLength:
 		for k in range(1, len(text), maxLength):
+			time.sleep(random.randint(minute / 2, minute))
 			message.reply_text(text[k:k + maxLength], quote=False)
 	log(client, "I have evaluated the command <code>{}<code> at {}.".format(command, constants.now()))
 
@@ -161,6 +148,7 @@ def execution(client: Client, message: Message):
 	message.edit_text(text[:maxLength])
 	if len(text) >= maxLength:
 		for k in range(1, len(text), maxLength):
+			time.sleep(random.randint(minute / 2, minute))
 			message.reply_text(text[k:k + maxLength], quote=False)
 	log(client, "I have executed the command <code>{}</code> at {}.".format(command, constants.now()))
 
@@ -175,7 +163,8 @@ def help(client: Client, message: Message):
 					 "evaluate",
 					 "exec",
 					 "help",
-					 "retrieve"
+					 "retrieve",
+					 "set"
 					])
 	prefixes = list(["/",
 					 "!",
@@ -187,6 +176,13 @@ def help(client: Client, message: Message):
 	message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format(
 		"<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
 	log(client, "I sent the help at {}.".format(constants.now()))
+
+
+def job(client: Client):
+	global constants, scheduler
+
+	scheduler.every().hour.do(subJob, client=client).tag("Temporary")
+	log(client, "I do my job at {}.".format(constants.now()))
 
 
 def log(client: Client = None, logging: str = ""):
@@ -228,11 +224,68 @@ def retrieveChatId(client: Client, message: Message):
 	log(client, text)
 
 
+@app.on_message(Filters.command("set", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList))
+def set(client: Client, message: Message):
+	global constants, flags
+
+	"""
+		Extract the command
+	"""
+	command = message.command
+	command.pop(0)
+	command = list(map(lambda n: n.lower(), command))
+	"""
+		Setting the log message
+	"""
+	text = "I set the {} flag to {} at {}.".format(command[0], command[1], constants.now())
+	"""
+		Execution of the command
+	"""
+	if len(command) == 2:
+		if command[0] in flags:
+			if command[1] == "on":
+				flags[command[0]] = True
+				"""
+					Removing the message
+				"""
+				message.delete(revoke=True)
+			elif command[1] == "off":
+				flags[command[0]] = False
+				"""
+					Removing the message
+				"""
+				message.delete(revoke=True)
+			else:
+				message.edit_text("The syntax is: <code>/set &ltflagName&gt &lton | off&gt</code>.")
+				text = "I helped {} to set a flag at {}.".format(message.from_user.username, constants.now())
+		else:
+			message.edit_text("The syntax is: <code>/set &ltflagName&gt &lton | off&gt</code>.")
+			text = "I helped {} to find the flag to set at {}.".format(message.from_user.username, constants.now())
+	else:
+		message.edit_text("The syntax is: <code>/set &ltflagName&gt &lton | off&gt</code>.")
+		text = "I helped {} to the <code>set</code> command at {}.".format(message.from_user.username, constants.now())
+	log(client, text)
+
+
+def subJob(client: Client):
+	global constants
+
+	log(client, "I do my subJob at {}.".format(constants.now()))
+
+
+@app.on_message(~Filters.regex("\.check|\.evaluate|\.exec|\.help|\.retrieve|\.set") & Filters.user(adminsIdList))
+def unknown(client: Client, message: Message):
+	global constants
+
+	message.edit_text("This command isn\'t supported.")
+	log(client, "I managed an unsupported command at {}.".format(constants.now()))
+
+
 log(logging="Client initializated\nSetting the markup syntax ...")
 app.set_parse_mode("html")
 log(logging="Setted the markup syntax\nSetting the Job Queue ...")
 log(logging="Setted the Job Queue\nStarted serving ...")
-scheduler.every().day.at("00:00").do(job, client=app)
+scheduler.every().monday.at("00:00").do(job, client=app)
 with app:
 	while True:
 		scheduler.run_pending()
