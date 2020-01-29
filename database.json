@@ -1,22 +1,72 @@
 {
   "admins": [
     {
-      "id": 1234567890,
-      "name": ""
+      "id": 0,
+      "is_self": false,
+      "is_contact": true,
+      "is_mutual_contact": true,
+      "is_deleted": false,
+      "is_bot": false,
+      "is_verified": false,
+      "is_restricted": false,
+      "is_scam": false,
+      "is_support": false,
+      "first_name": "",
+      "last_name": "",
+      "username": "",
+      "language_code": null,
+      "phone_number": ""
     },
+    
+    ...
+    
     {
-      "id": 1234567890,
-      "name": ""
+      "id": 0,
+      "is_self": false,
+      "is_contact": true,
+      "is_mutual_contact": true,
+      "is_deleted": false,
+      "is_bot": false,
+      "is_verified": false,
+      "is_restricted": false,
+      "is_scam": false,
+      "is_support": false,
+      "first_name": "",
+      "last_name": "",
+      "username": "",
+      "language_code": null,
+      "phone_number": ""
     }
   ],
   "chat": [
     {
-      "id": -1001234567890,
-      "name": ""
+      "id": 0,
+      "type": "",
+      "is_verified": false,
+      "is_restricted": false,
+      "is_scam": false,
+      "is_support": null,
+      "title": "",
+      "username": null,
+      "first_name": null,
+      "last_name": null,
+      "invite_link": ""
     },
+    
+    ...
+    
     {
-      "id": -1001234567890,
-      "name": ""
+      "id": 0,
+      "type": "",
+      "is_verified": false,
+      "is_restricted": false,
+      "is_scam": false,
+      "is_support": null,
+      "title": "",
+      "username": "",
+      "first_name": null,
+      "last_name": null,
+      "invite_link": null
     }
   ]
 }
