@@ -319,7 +319,7 @@ def unknownFilter():
 			if bool(message.matches) is False and text.startswith(".") and len(text) > 1 and text != "...":
 				return True
 		return False
-	return Filters.create(func, "UnknownFilter", p=re.compile("/" + "|/".join(commands) + "|!" + "|!".join(commands) + "|\." + "|\.".join(commands), 0))
+	return Filters.create(func, "UnknownFilter", p=re.compile("\/" + "|\/".join(commands) + "|\!" + "|\!".join(commands) + "|\." + "|\.".join(commands), 0))
 
 
 @app.on_message(unknownFilter() & Filters.user(adminsIdList))
