@@ -31,8 +31,8 @@ class Constants:
     @chats.setter
     def chats(self, newChat: dict):
         self.__chat = self.__chat.append(newChat, ignore_index=True)
-        element = "{\"admins\":" + self.__botAdmins.to_json(orient="records") + ",\"chat\":" + \
-                  self.__chat.to_json(orient="records") + "}"
+        element = "{\"admins\":" + self.__botAdmins.to_json(orient="records").replace("\":", ": ").replace(",", ", ") + ",\"chat\":" + \
+				  self.__chat.to_json(orient="records").replace("\":", ": ").replace(",", ", ") + "}"
         """
             Saving the database
         """
@@ -98,15 +98,22 @@ class Constants:
             """
 		Setting the database
 	    """
-            self.__botAdmins = pandas.DataFrame(data=files["admins"], columns=list(["id", "name"]))
-            self.__chat = pandas.DataFrame(data=files["chat"], columns=list(["id", "name"]))
+            self.__botAdmins = pandas.DataFrame(data=files["admins"], columns=list(["id", "is_self", "is_contact",
+										    "is_mutual_contact", "is_deleted",
+										    "is_bot", "is_verified", "is_restricted",
+										    "is_scam", "is_support", "first_name",
+										    "last_name", "username", "language_code",
+										    "phone_number"]))
+            self.__chat = pandas.DataFrame(data=files["chat"], columns=list(["id", "type", "is_verified", "is_restricted",
+									     "is_scam", "is_support", "title", "username",
+									     "first_name", "last_name", "invite_link"]))
         """
             Setting the parameters
         """
         rows = self.__botAdmins.shape[0]
         rows = range(rows)
         for i in rows:
-            if self.__botAdmins.at[i, "name"] == "":
+            if self.__botAdmins.at[i, "username"] == "":
                 self.__creator = int(self.__botAdmins.at[i, "id"])
 
     @property
