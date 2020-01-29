@@ -31,8 +31,8 @@ class Constants:
     @chats.setter
     def chats(self, newChat: dict):
         self.__chat = self.__chat.append(newChat, ignore_index=True)
-        element = "{\"admins\":" + self.__botAdmins.to_json(orient="records").replace("\":", ": ").replace(",", ", ") + ",\"chat\":" + \
-				  self.__chat.to_json(orient="records").replace("\":", ": ").replace(",", ", ") + "}"
+        element = "{\"admins\":" + self.__botAdmins.to_json(orient="records").replace("\":", "\": ").replace(",", ", ") + ",\"chat\":" + \
+				  self.__chat.to_json(orient="records").replace("\":", "\": ").replace(",", ", ") + "}"
         """
             Saving the database
         """
