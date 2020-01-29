@@ -82,14 +82,14 @@ def checkDatabase(client: Client, message: Message):
 		Sending the output
 	"""
 	element = constants.admins.to_json(orient="records")
-	element = element.replace("\":", ": ")
+	element = element.replace("\":", "\": ")
 	element = element.replace(",", ", ")
 	print("{}".format(element))
 	print("\n{}\n".format(adminsIdList))
 	for j in adminsIdList:
 		print("\t{} - {}".format(j, type(j)))
 	element = constants.chats.to_json(orient="records")
-	element = element.replace("\":", ": ")
+	element = element.replace("\":", "\": ")
 	element = element.replace(",", ", ")
 	print("\n{}".format(element))
 	print("\n{}\n".format(chatIdList))
