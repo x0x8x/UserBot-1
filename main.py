@@ -6,6 +6,7 @@ import schedule
 from pyrogram import Client, Filters, Message
 from pyrogram.api.functions.help import GetConfig
 from pyrogram.api.functions.account import UpdateStatus
+from pyrogram.errors import FloodWait
 
 from modules import Constants
 
@@ -49,14 +50,6 @@ chatIdList.append("me")
 	Initializing the Client ...
 """
 app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
-
-
-def job(client: Client):
-	global constants, scheduler
-
-	scheduler.every().hour.do(subJob, client=client).tag("Temporary")
-	log(client, "I have done my job at {}.".format(constants.now()))
-	client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.service)
@@ -167,21 +160,34 @@ def help(client: Client, message: Message):
 	global constants
 
 	commands = list(["check",
-			 "evaluate",
-			 "exec",
-			 "help",
-			 "retrieve"
-			])
+					 "evaluate",
+					 "exec",
+					 "help",
+					 "retrieve",
+					 "set",
+					 "update"
+					])
 	prefixes = list(["/",
-			 "!",
-			 "."
-			])
+					 "!",
+					 "."
+					])
 	"""
 		Sending the output
 	"""
 	message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format(
 		"<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
 	log(client, "I sent the help at {}.".format(constants.now()))
+	client.send(UpdateStatus(offline=True))
+
+
+def job(client: Client):
+	global constants, scheduler
+
+	"""
+		Sending the output
+	"""
+	scheduler.every().hour.do(subJob, client=client).tag("Temporary")
+	log(client, "I have done my job at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
@@ -305,13 +311,199 @@ def subJob(client: Client):
 	client.send(UpdateStatus(offline=True))
 
 
+@app.on_message(Filters.command("update", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList))
+def updateDatabase(client: Client, message: Message = None):
+	global adminsIdList, constants, chatIdList
+
+	"""
+		Copy the database
+	"""
+	copyPath = "~/Desktop"
+	pwd = str(subprocess.check_output("pwd", shell=True))
+	pwd = pwd.replace("b\'", "")
+	pwd = pwd.replace("\\n\'", "")
+	if pwd == "/":
+		path = "home/USER/Documents/gitHub/UserBot/database.json"
+	elif pwd == "/home":
+		path = "USER/Documents/gitHub/UserBot/database.json"
+	elif pwd == "/home/USER":
+		path = "Documents/gitHub/UserBot/database.json"
+	elif pwd == "/home/USER/Documents":
+		path = "gitHub/UserBot/database.json"
+	elif pwd == "/home/USER/Documents/gitHub":
+		path = "UserBot/database.json"
+	elif pwd == "/root":
+		path = "/home/USER/Documents/gitHub/UserBot/database.json"
+	elif pwd == "/data/data/com.termux/files/home":
+		path = "downloads/UserBot/database.json"
+		copyPath = "."
+	elif pwd == "/data/data/com.termux/files/home/downloads":
+		path = "UserBot/database.json"
+		copyPath = ".."
+	else:
+		path = "database.json"
+	os.system("cp {} {}".format(path, copyPath))
+	"""
+		Clearing the database
+	"""
+	del constants.admins
+	del constants.chats
+	"""
+		Updateing the admins database
+	"""
+	for i in adminsIdList:
+		try:
+			chat = client.get_users(i)
+		except FloodWait as e:
+			time.sleep(e.x)
+		chatDict = chat.__dict__
+		try:
+			del chatDict["_client"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["photo"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["description"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["pinned_message"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["sticker_set_name"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["can_set_sticker_set"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["members_count"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["restrictions"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["permissions"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["distance"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["status"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["last_online_date"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["next_offline_date"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["dc_id"]
+		except KeyError:
+			pass
+		constants.admins = dict(chatDict)
+	"""
+		Updateing the chats database
+	"""
+	for i in chatIdList:
+		if i == "me":
+			continue
+		try:
+			chat = client.get_chat(i)
+		except FloodWait as e:
+			time.sleep(e.x)
+		chatDict = chat.__dict__
+		try:
+			del chatDict["_client"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["photo"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["description"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["pinned_message"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["sticker_set_name"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["can_set_sticker_set"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["members_count"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["restrictions"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["permissions"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["distance"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["status"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["last_online_date"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["next_offline_date"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["dc_id"]
+		except KeyError:
+			pass
+		constants.chats = dict(chatDict)
+	"""
+		Removing the message
+	"""
+	if message is not None and len(message.command) != 0:
+		message.delete(revoke=True)
+	"""
+		Removing the cpy of the database
+	"""
+	os.system("rm -rf {}/database.json".format(copyPath))
+	log(client, "I have updated the database at {}.".format(constants.now()))
+	client.send(UpdateStatus(offline=True))
+
+
 def unknownFilter():
 	commands = list(["check",
-			 "evaluate",
-			 "exec",
-			 "help",
-			 "retrieve"
-			])
+					 "evaluate",
+					 "exec",
+					 "help",
+					 "retrieve",
+					 "set",
+					 "update"
+					])
 	def func(flt, message):
 		text = message.text or message.caption
 		if text:
@@ -338,7 +530,9 @@ log(logging="Client initializated\nSetting the markup syntax ...")
 app.set_parse_mode("html")
 log(logging="Setted the markup syntax\nSetting the Job Queue ...")
 log(logging="Setted the Job Queue\nStarted serving ...")
-scheduler.every().monday.at("00:00").do(job, client=app)
+scheduler.every().day.do(job, client=app)
+i = scheduler.every().week.do(updateDatabase, client=app)
 with app:
+	i.run()
 	while True:
 		scheduler.run_pending()
