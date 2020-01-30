@@ -327,6 +327,8 @@ def unknownFilter():
 def unknown(client: Client, message: Message):
 	global constants
 
+	if message.chat.type == "bot":
+		return
 	message.edit_text("This command isn\'t supported.")
 	log(client, "I managed an unsupported command at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
