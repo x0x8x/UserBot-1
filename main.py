@@ -83,7 +83,7 @@ def checkDatabase(client: Client, message: Message):
 		print("\t{} - {}".format(j, type(j)))
 	element = constants.chats.to_json(orient="records")
 	element = element.replace("\":", "\": ")
-	element = element.replace(",", ", ")
+	element = element.replace(",\"", ", \"")
 	print("\n{}".format(element))
 	print("\n{}\n".format(chatIdList))
 	for j in chatIdList:
