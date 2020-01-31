@@ -23,8 +23,8 @@ class Constants:
 	@admins.setter
 	def admins(self, newAdmin: dict):
 		self.__botAdmins = self.__botAdmins.append(newAdmin, ignore_index=True)
-		element = "{\"admins\":" + self.__botAdmins.to_json(orient="records").replace("\":", "\": ").replace(",", ", ") + ",\"chat\":" + \
-				  self.__chat.to_json(orient="records").replace("\":", "\": ").replace(",", ", ") + "}"
+		element = "{\"admins\":" + self.__botAdmins.to_json(orient="records").replace("\":", "\": ").replace(",\"", ", \"") + ",\"chat\":" + \
+				  self.__chat.to_json(orient="records").replace("\":", "\": ").replace(",\"", ", \"") + "}"
 		"""
 			Saving the database
 		"""
@@ -60,7 +60,7 @@ class Constants:
 																	   "is_scam", "is_support", "first_name",
 																	   "last_name", "username", "language_code",
 																	   "phone_number"]))
-		element = "{\"admins\": [],\"chat\":" + self.__chat.to_json(orient="records").replace("\":", "\": ").replace(",", ", ") + "}"
+		element = "{\"admins\": [],\"chat\":" + self.__chat.to_json(orient="records").replace("\":", "\": ").replace(",\"", ", \"") + "}"
 		"""
 			Saving the database
 		"""
@@ -99,8 +99,8 @@ class Constants:
 	@chats.setter
 	def chats(self, newChat: dict):
 		self.__chat = self.__chat.append(newChat, ignore_index=True)
-		element = "{\"admins\":" + self.__botAdmins.to_json(orient="records").replace("\":", "\": ").replace(",", ", ") + ",\"chat\":" + \
-				  self.__chat.to_json(orient="records").replace("\":", "\": ").replace(",", ", ") + "}"
+		element = "{\"admins\":" + self.__botAdmins.to_json(orient="records").replace("\":", "\": ").replace(",\"", ", \"") + ",\"chat\":" + \
+				  self.__chat.to_json(orient="records").replace("\":", "\": ").replace(",\"", ", \"") + "}"
 		"""
 			Saving the database
 		"""
@@ -133,7 +133,7 @@ class Constants:
 		self.__chat = pandas.DataFrame(data=dict(), columns=list(["id", "type", "is_verified", "is_restricted",
 																  "is_scam", "is_support", "title", "username",
 																  "first_name", "last_name", "invite_link"]))
-		element = "{\"admins\":" + self.__botAdmins.to_json(orient="records").replace("\":", "\": ").replace(",", ", ") + ",\"chat\": []}"
+		element = "{\"admins\":" + self.__botAdmins.to_json(orient="records").replace("\":", "\": ").replace(",\"", ", \"") + ",\"chat\": []}"
 		"""
 			Saving the database
 		"""
