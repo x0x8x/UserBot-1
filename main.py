@@ -4,12 +4,19 @@ import subprocess
 
 import schedule
 from pyrogram import Client, Filters, Message
-from pyrogram.api.functions.help import GetConfig
 from pyrogram.api.functions.account import UpdateStatus
+from pyrogram.api.functions.help import GetConfig
 from pyrogram.errors import FloodWait
 
 from modules import Constants
 
+commands = list(["check",
+				 "evaluate",
+				 "exec",
+				 "help",
+				 "retrieve",
+				 "update"
+				])
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nSetting the admins list ...",
 				   "Admins setted\nSetting the chats list ...", "Chats initializated\nInitializing the Client ..."])
@@ -76,7 +83,6 @@ def checkDatabase(client: Client, message: Message):
 	"""
 	element = constants.admins.to_json(orient="records")
 	element = element.replace("\":", "\": ")
-	element = element.replace(",", ", ")
 	print("{}".format(element))
 	print("\n{}\n".format(adminsIdList))
 	for j in adminsIdList:
@@ -157,16 +163,8 @@ def execution(client: Client, message: Message):
 	Filters.command("help", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(
 		chatIdList))
 def help(client: Client, message: Message):
-	global constants
+	global commands, constants
 
-	commands = list(["check",
-					 "evaluate",
-					 "exec",
-					 "help",
-					 "retrieve",
-					 "set",
-					 "update"
-					])
 	prefixes = list(["/",
 					 "!",
 					 "."
@@ -187,7 +185,7 @@ def job(client: Client):
 		Sending the output
 	"""
 	scheduler.every().hour.do(subJob, client=client).tag("Temporary")
-	log(client, "I have done my job at {}.".format(constants.now()))
+	log(client, "I done my job at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
@@ -205,10 +203,12 @@ def log(client: Client = None, logging: str = ""):
 		initialLog.append(logging)
 
 
-@app.on_message(Filters.command("retrieve", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
+@app.on_message(Filters.command("retrieve", prefixes=list(["/", "!", "."])) & (Filters.user(constants.creator) | Filters.channel))
 def retrieveChatId(client: Client, message: Message):
 	global adminsIdList, constants, chatIdList
 
+	if message.from_user is not None and message.from_user.id != constants.creator:
+		return
 	chat = message.chat
 	lists = chatIdList
 	text = "The chat {} is already present in the list of allowed chat.".format(chat.title)
@@ -307,7 +307,7 @@ def retrieveChatId(client: Client, message: Message):
 def subJob(client: Client):
 	global constants
 
-	log(client, "I have done my job at {}.".format(constants.now()))
+	log(client, "I done my job at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
@@ -319,30 +319,11 @@ def updateDatabase(client: Client, message: Message = None):
 		Copy the database
 	"""
 	copyPath = "~/Desktop"
-	pwd = str(subprocess.check_output("pwd", shell=True))
-	pwd = pwd.replace("b\'", "")
-	pwd = pwd.replace("\\n\'", "")
-	if pwd == "/":
-		path = "home/USER/Documents/gitHub/UserBot/database.json"
-	elif pwd == "/home":
-		path = "USER/Documents/gitHub/UserBot/database.json"
-	elif pwd == "/home/USER":
-		path = "Documents/gitHub/UserBot/database.json"
-	elif pwd == "/home/USER/Documents":
-		path = "gitHub/UserBot/database.json"
-	elif pwd == "/home/USER/Documents/gitHub":
-		path = "UserBot/database.json"
-	elif pwd == "/root":
-		path = "/home/USER/Documents/gitHub/UserBot/database.json"
-	elif pwd == "/data/data/com.termux/files/home":
-		path = "downloads/UserBot/database.json"
+	if constants.databasePath == "/data/data/com.termux/files/home":
 		copyPath = "."
-	elif pwd == "/data/data/com.termux/files/home/downloads":
-		path = "UserBot/database.json"
+	elif constants.databasePath == "/data/data/com.termux/files/home/downloads":
 		copyPath = ".."
-	else:
-		path = "database.json"
-	os.system("cp {} {}".format(path, copyPath))
+	os.system("cp {} {}".format(constants.databasePath, copyPath))
 	"""
 		Clearing the database
 	"""
@@ -351,144 +332,138 @@ def updateDatabase(client: Client, message: Message = None):
 	"""
 		Updateing the admins database
 	"""
-	for i in adminsIdList:
+	chats = client.get_users(adminsIdList)
+	chats.append(client.get_me())
+	chats = list(map(lambda n: n.__dict__, chats))
+	for i in chats:
 		try:
-			chat = client.get_users(i)
-		except FloodWait as e:
-			time.sleep(e.x)
-		chatDict = chat.__dict__
-		try:
-			del chatDict["_client"]
+			del i["_client"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["photo"]
+			del i["photo"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["description"]
+			del i["description"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["pinned_message"]
+			del i["pinned_message"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["sticker_set_name"]
+			del i["sticker_set_name"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["can_set_sticker_set"]
+			del i["can_set_sticker_set"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["members_count"]
+			del i["members_count"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["restrictions"]
+			del i["restrictions"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["permissions"]
+			del i["permissions"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["distance"]
+			del i["distance"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["status"]
+			del i["status"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["last_online_date"]
+			del i["last_online_date"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["next_offline_date"]
+			del i["next_offline_date"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["dc_id"]
+			del i["dc_id"]
 		except KeyError:
 			pass
-		constants.admins = dict(chatDict)
+	constants.admins = chats
 	"""
 		Updateing the chats database
 	"""
-	for i in chatIdList:
-		if i == "me":
-			continue
+	chatIdList.remove("me")
+	chats = list(map(lambda n: client.get_chat(n).__dict__, chatIdList))
+	chatIdList.append("me")
+	for i in chats:
 		try:
-			chat = client.get_chat(i)
-		except FloodWait as e:
-			time.sleep(e.x)
-		chatDict = chat.__dict__
-		try:
-			del chatDict["_client"]
+			del i["_client"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["photo"]
+			del i["photo"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["description"]
+			del i["description"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["pinned_message"]
+			del i["pinned_message"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["sticker_set_name"]
+			del i["sticker_set_name"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["can_set_sticker_set"]
+			del i["can_set_sticker_set"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["members_count"]
+			del i["members_count"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["restrictions"]
+			del i["restrictions"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["permissions"]
+			del i["permissions"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["distance"]
+			del i["distance"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["status"]
+			del i["status"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["last_online_date"]
+			del i["last_online_date"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["next_offline_date"]
+			del i["next_offline_date"]
 		except KeyError:
 			pass
 		try:
-			del chatDict["dc_id"]
+			del i["dc_id"]
 		except KeyError:
 			pass
-		constants.chats = dict(chatDict)
+	constants.chats = chats
 	"""
 		Removing the message
 	"""
 	if message is not None and len(message.command) != 0:
 		message.delete(revoke=True)
 	"""
-		Removing the cpy of the database
+		Removing the copy of the database
 	"""
 	os.system("rm -rf {}/database.json".format(copyPath))
 	log(client, "I have updated the database at {}.".format(constants.now()))
@@ -496,14 +471,8 @@ def updateDatabase(client: Client, message: Message = None):
 
 
 def unknownFilter():
-	commands = list(["check",
-					 "evaluate",
-					 "exec",
-					 "help",
-					 "retrieve",
-					 "set",
-					 "update"
-					])
+	global commands
+
 	def func(flt, message):
 		text = message.text or message.caption
 		if text:
