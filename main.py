@@ -396,8 +396,13 @@ def updateDatabase(client: Client, message: Message = None):
 	"""
 		Updateing the chats database
 	"""
+	chats = list()
 	chatIdList.remove("me")
-	chats = list(map(lambda n: client.get_chat(n).__dict__, chatIdList))
+	for i in chatIdList:
+		try:
+			chats.append(client.get_chat(i).__dict__)
+		except FloodWait as e:
+			time.sleep(e.x)
 	chatIdList.append("me")
 	for i in chats:
 		try:
