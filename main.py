@@ -489,7 +489,7 @@ def unknownFilter():
 	return Filters.create(func, "UnknownFilter", p=re.compile("[/!\.]{}".format("|[/!\.]".join(commands)), 0))
 
 
-@app.on_message(unknownFilter() & Filters.user(adminsIdList))
+@app.on_message(unknownFilter() & Filters.user(adminsIdList) & Filters.chat(chatIdList))
 def unknown(client: Client, message: Message):
 	global constants
 
