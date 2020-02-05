@@ -316,7 +316,7 @@ def subJob(client: Client):
 	client.send(UpdateStatus(offline=True))
 
 
-@app.on_message(Filters.command("update", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList))
+@app.on_message(Filters.command("update", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList) & stopFilter)
 def updateDatabase(client: Client, message: Message = None):
 	global adminsIdList, constants, chatIdList
 
