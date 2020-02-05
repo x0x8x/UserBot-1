@@ -14,10 +14,6 @@ def stopFilterCommute(self):
 	self.flag = not self.flag
 
 
-def stopFilterSetFlag(self):
-	self.flag = True
-
-
 commands = list(["check",
 				 "evaluate",
 				 "exec",
@@ -29,8 +25,7 @@ constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nSetting the admins list ...",
 				   "Admins setted\nSetting the chats list ...", "Chats initializated\nInitializing the Client ..."])
 scheduler = schedule.default_scheduler
-stopFilter = Filters.create(lambda self, _: self.flag, setFlag=stopFilterSetFlag, commute=stopFilterCommute)
-stopFilter.setFlag()
+stopFilter = Filters.create(lambda self, _: self.flag, flag=True, commute=stopFilterCommute)
 """
 	Initializing the Admins ...
 """
@@ -80,7 +75,7 @@ def automaticRemovalStatus(client: Client, message: Message):
 
 @app.on_message(
 	Filters.command("check", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(
-		chatIdList) & stopFilter(1))
+		chatIdList) & stopFilter)
 def checkDatabase(client: Client, message: Message):
 	global adminsIdList, constants, chatIdList
 
@@ -213,7 +208,7 @@ def log(client: Client = None, logging: str = ""):
 		initialLog.append(logging)
 
 
-@app.on_message(Filters.command("retrieve", prefixes=list(["/", "!", "."])) & (Filters.user(constants.creator) | Filters.channel) & stopFilter(1))
+@app.on_message(Filters.command("retrieve", prefixes=list(["/", "!", "."])) & (Filters.user(constants.creator) | Filters.channel) & stopFilter)
 def retrieveChatId(client: Client, message: Message):
 	global adminsIdList, constants, chatIdList
 
