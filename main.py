@@ -235,75 +235,70 @@ def retrieveChatId(client: Client, message: Message):
 		"""
 			Adding the chat to the database
 		"""
-		before = len(lists)
-		lists = set(lists)
-		lists.add(chat.id)
-		lists = list(lists)
-		if len(lists) != before:
-			chatDict = chat.__dict__
-			try:
-				del chatDict["_client"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["photo"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["description"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["pinned_message"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["sticker_set_name"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["can_set_sticker_set"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["members_count"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["restrictions"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["permissions"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["distance"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["status"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["last_online_date"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["next_offline_date"]
-			except KeyError:
-				pass
-			try:
-				del chatDict["dc_id"]
-			except KeyError:
-				pass
-			if chatType is not None:
-				constants.chats = dict(chatDict)
-				text = "I added {} to the list of allowed chat at {}.".format(chat.title, constants.now())
-			else:
-				constants.admins = dict(chatDict)
-				text = "I added {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
-				text += "{}to the list of allowed chat at {}.".format("{} ".format(chat.last_name) if chat.last_name is not None else "", constants.now())
+		chatDict = chat.__dict__
+		try:
+			del chatDict["_client"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["photo"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["description"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["pinned_message"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["sticker_set_name"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["can_set_sticker_set"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["members_count"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["restrictions"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["permissions"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["distance"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["status"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["last_online_date"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["next_offline_date"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["dc_id"]
+		except KeyError:
+			pass
+		if chatType is not None:
+			constants.chats = list([chatDict])
+			text = "I added {} to the list of allowed chat at {}.".format(chat.title, constants.now())
+		else:
+			constants.admins = list([chatDict])
+			text = "I added {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
+			text += "{}to the list of allowed chat at {}.".format("{} ".format(chat.last_name) if chat.last_name is not None else "", constants.now())
 	log(client, text)
 	client.send(UpdateStatus(offline=True))
 
