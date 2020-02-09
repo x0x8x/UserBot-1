@@ -10,29 +10,30 @@ class Constants:
 	def __init__(self):
 		self.__appHash = "HASH"
 		self.__appId = 0
-		self.__botLog = -0
 		self.__botAdmins = None
+		self.__botLog = -0
+		self.__botUsername = "UserBot"
 		self.__chat = None
 		self.__creator = 0
 		pwd = str(subprocess.check_output("pwd", shell=True))
 		pwd = pwd.replace("b\'", "")
 		pwd = pwd.replace("\\n\'", "")
 		if pwd == "/":
-			self.__path = "home/USER/Documents/gitHub/UserBot/database.json"
+			self.__path = "home/USER/Documents/gitHub/{}/database.json".format(self.__botUsername)
 		elif pwd == "/home":
-			self.__path = "USER/Documents/gitHub/UserBot/database.json"
+			self.__path = "USER/Documents/gitHub/{}/database.json".format(self.__botUsername)
 		elif pwd == "/home/USER":
-			self.__path = "Documents/gitHub/UserBot/database.json"
+			self.__path = "Documents/gitHub/{}/database.json".format(self.__botUsername)
 		elif pwd == "/home/USER/Documents":
-			self.__path = "gitHub/UserBot/database.json"
+			self.__path = "gitHub/{}/database.json".format(self.__botUsername)
 		elif pwd == "/home/USER/Documents/gitHub":
-			self.__path = "UserBot/database.json"
+			self.__path = "{}/database.json".format(self.__botUsername)
 		elif pwd == "/root":
-			self.__path = "/home/USER/Documents/gitHub/UserBot/database.json"
+			self.__path = "/home/USER/Documents/gitHub/{}/database.json".format(self.__botUsername)
 		elif pwd == "/data/data/com.termux/files/home":
-			self.__path = "downloads/UserBot/database.json"
+			self.__path = "downloads/{}/database.json".format(self.__botUsername)
 		elif pwd == "/data/data/com.termux/files/home/downloads":
-			self.__path = "UserBot/database.json"
+			self.__path = "{}/database.json".format(self.__botUsername)
 		else:
 			self.__path = "database.json"
 		self.__phoneNumber = "PHONE NUMBER WITH PREFIX AND WITHOUT +"
@@ -162,3 +163,7 @@ class Constants:
 	@property
 	def phoneNumber(self) -> str:
 		return self.__phoneNumber
+
+	@property
+	def username(self) -> str:
+		return self.__botUsername

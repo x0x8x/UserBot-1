@@ -61,8 +61,7 @@ chatIdList.append("me")
 	Chats initializated
 	Initializing the Client ...
 """
-app = Client("UserBot", constants.id, constants.hash, phone_number=constants.phoneNumber)
-
+app = Client(session_name=constants.username, api_id=constants.id, api_hash=constants.hash, phone_number=constants.phoneNumber)
 
 @app.on_message(Filters.service)
 def automaticRemovalStatus(client: Client, message: Message):
