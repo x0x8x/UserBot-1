@@ -1,4 +1,5 @@
 import os
+import logging as logger
 import re
 import subprocess
 
@@ -24,6 +25,9 @@ commands = list(["check",
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nSetting the admins list ...",
 				   "Admins setted\nSetting the chats list ...", "Chats initializated\nInitializing the Client ..."])
+logger.basicConfig(filename="{}{}.log".format(constants.databasePath, constants.username), datefmt="%d/%m/%Y %H:%M:%S", encoding="utf-8", format="At %(asctime)s was logged the event:\t%(levelname)s - %(message)s", level=logger.INFO)
+for i in initialLog:
+    logger.info(i)
 scheduler = schedule.default_scheduler
 stopFilter = Filters.create(lambda self, _: self.flag, flag=True, commute=stopFilterCommute)
 """
@@ -100,11 +104,14 @@ def checkDatabase(client: Client, message: Message):
 		print("\t{} - {}".format(j, type(j)))
 	print("\n\n")
 	log(client, "I have checked the admin and the chat list at {}.".format(constants.now()))
+    logger.info("I have checked the admin and the chat list at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def evaluation(client: Client, message: Message):
+	global constants
+
 	"""
 		Extract the command
 	"""
@@ -126,11 +133,14 @@ def evaluation(client: Client, message: Message):
 			time.sleep(random.randint(minute / 6, minute / 2))
 			message.reply_text(text[k:k + maxLength], quote=False)
 	log(client, "I have evaluated the command <code>{}</code> at {}.".format(command, constants.now()))
+	logger.info("I have evaluated the command <code>{}</code> at {}.".format(command, constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def execution(client: Client, message: Message):
+	global constants
+
 	"""
 		Extract the command
 	"""
@@ -160,6 +170,7 @@ def execution(client: Client, message: Message):
 			time.sleep(random.randint(minute / 6, minute / 2))
 			message.reply_text(text[k:k + maxLength], quote=False)
 	log(client, "I have executed the command <code>{}</code> at {}.".format(command, constants.now()))
+	logger.info("I have executed the command <code>{}</code> at {}.".format(command, constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
@@ -179,6 +190,7 @@ def help(client: Client, message: Message):
 	message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format(
 		"<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
 	log(client, "I sent the help at {}.".format(constants.now()))
+	logger.info("I sent the help at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
@@ -190,10 +202,11 @@ def job(client: Client):
 	"""
 	scheduler.every().hour.do(subJob, client=client).tag("Temporary")
 	log(client, "I done my job at {}.".format(constants.now()))
+	logger.info("I done my job at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
-def log(client: Client = None, logging: str = ""):
+def log(client: Client = None: str = ""):
 	global constants, initialLog
 
 	if client is not None:
@@ -201,7 +214,7 @@ def log(client: Client = None, logging: str = ""):
 			for msg in initialLog:
 				client.send_message(constants.log, msg)
 			initialLog = None
-		client.send_message(constants.log, logging)
+		client.send_message(constants.log)
 		client.send(UpdateStatus(offline=True))
 	else:
 		initialLog.append(logging)
@@ -300,6 +313,7 @@ def retrieveChatId(client: Client, message: Message):
 			text = "I added {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
 			text += "{}to the list of allowed chat at {}.".format("{} ".format(chat.last_name) if chat.last_name is not None else "", constants.now())
 	log(client, text)
+	logger.info(text)
 	client.send(UpdateStatus(offline=True))
 
 
@@ -307,6 +321,7 @@ def subJob(client: Client):
 	global constants
 
 	log(client, "I done my job at {}.".format(constants.now()))
+	logger.info("I done my job at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
@@ -318,9 +333,9 @@ def updateDatabase(client: Client, message: Message = None):
 		Copy the database
 	"""
 	copyPath = "~/Desktop"
-	if constants.databasePath == "/data/data/com.termux/files/home":
+	if constants.databasePath == "downloads/{}/".format(constants.username):
 		copyPath = "."
-	elif constants.databasePath == "/data/data/com.termux/files/home/downloads":
+	elif constants.databasePath == "{}/".format(constants.username):
 		copyPath = ".."
 	os.system("cp {} {}".format(constants.databasePath, copyPath))
 	stopFilter.commute()
@@ -473,6 +488,7 @@ def updateDatabase(client: Client, message: Message = None):
 	"""
 	os.system("rm -rf {}/database.json".format(copyPath))
 	log(client, "I have updated the database at {}.".format(constants.now()))
+	logger.info("I have updated the database at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
@@ -498,13 +514,17 @@ def unknown(client: Client, message: Message):
 		return
 	message.edit_text("This command isn\'t supported.")
 	log(client, "I managed an unsupported command at {}.".format(constants.now()))
+    logger.info("I managed an unsupported command at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
 log(logging="Client initializated\nSetting the markup syntax ...")
+logger.info("Client initializated\nSetting the markup syntax ...")
 app.set_parse_mode("html")
 log(logging="Setted the markup syntax\nSetting the Job Queue ...")
+logger.info("Setted the markup syntax\nSetting the Job Queue ...")
 log(logging="Setted the Job Queue\nStarted serving ...")
+logger.info("Setted the Job Queue\nStarted serving ...")
 scheduler.every().day.do(job, client=app)
 i = scheduler.every().week.do(updateDatabase, client=app)
 with app:
