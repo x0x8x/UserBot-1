@@ -25,7 +25,7 @@ commands = list(["check",
 constants = Constants.Constants()
 initialLog = list(["Initializing the Admins ...", "Admins initializated\nSetting the admins list ...",
 				   "Admins setted\nSetting the chats list ...", "Chats initializated\nInitializing the Client ..."])
-logger.basicConfig(filename="{}{}.log".format(constants.databasePath, constants.username), datefmt="%d/%m/%Y %H:%M:%S", encoding="utf-8", format="At %(asctime)s was logged the event:\t%(levelname)s - %(message)s", level=logger.INFO)
+logger.basicConfig(filename="{}{}.log".format(constants.databasePath, constants.username), datefmt="%d/%m/%Y %H:%M:%S", format="At %(asctime)s was logged the event:\t%(levelname)s - %(message)s", level=logger.INFO)
 for i in initialLog:
     logger.info(i)
 scheduler = schedule.default_scheduler
@@ -206,7 +206,7 @@ def job(client: Client):
 	client.send(UpdateStatus(offline=True))
 
 
-def log(client: Client = None: str = ""):
+def log(client: Client = None, logging: str = ""):
 	global constants, initialLog
 
 	if client is not None:
@@ -214,7 +214,7 @@ def log(client: Client = None: str = ""):
 			for msg in initialLog:
 				client.send_message(constants.log, msg)
 			initialLog = None
-		client.send_message(constants.log)
+		client.send_message(constants.log, logging)
 		client.send(UpdateStatus(offline=True))
 	else:
 		initialLog.append(logging)
