@@ -1,9 +1,13 @@
 import os
 import logging as logger
+import random
 import re
 import subprocess
+import time
+from datetime import date
 
 import schedule
+import pymysql
 from pyrogram import Client, Filters, Message
 from pyrogram.api.functions.account import UpdateStatus
 from pyrogram.api.functions.help import GetConfig
@@ -15,6 +19,8 @@ def stopFilterCommute(self):
 	self.flag = not self.flag
 
 
+adminsIdList = list()
+chatIdList = list()
 commands = list(["check",
 				 "evaluate",
 				 "exec",
@@ -23,49 +29,50 @@ commands = list(["check",
 				 "update"
 				])
 constants = Constants.Constants()
-initialLog = list(["Initializing the Admins ...", "Admins initializated\nSetting the admins list ...",
-				   "Admins setted\nSetting the chats list ...", "Chats initializated\nInitializing the Client ..."])
+connection = pymysql.connect(host="localhost",
+                             user="USER",
+                             password="PASSWORD",
+                             database=constants.username,
+							 port=3306,
+                             charset="utf8",
+                             cursorclass=pymysql.cursors.DictCursor,
+                             autocommit=False)
+flags = dict({"gnome": ""})
 logger.basicConfig(filename="{}{}.log".format(constants.databasePath, constants.username), datefmt="%d/%m/%Y %H:%M:%S", format="At %(asctime)s was logged the event:\t%(levelname)s - %(message)s", level=logger.INFO)
-for i in initialLog:
-    logger.info(i)
+minute = 60
 scheduler = schedule.default_scheduler
 stopFilter = Filters.create(lambda self, _: self.flag, flag=True, commute=stopFilterCommute)
-"""
-	Initializing the Admins ...
-"""
-constants.loadCreators()
-"""
-	Admins initializated
-	Setting the admins list ...
-"""
-adminsIdList = set()
-i = constants.admins.to_json(orient="columns")
-i = i[len("{\"id\":{"):i.index("}")]
-i = i.split(",")
-i = list(map(lambda n: n.split(":"), i))
-i = list(map(lambda n: dict({n[0]: n[1]}), i))
-i = list(map(lambda n: list(n.values()), i))
-list(map(lambda n: list(map(lambda m: adminsIdList.add(int(m)), n)), i))
-adminsIdList = list(adminsIdList)
-"""
-	Admins setted
-	Setting the chats list ...
-"""
-chatIdList = set()
-i = constants.chats.to_json(orient="columns")
-i = i[len("{\"id\":{"):i.index("}")]
-i = i.split(",")
-i = list(map(lambda n: n.split(":"), i))
-i = list(map(lambda n: dict({n[0]: n[1]}), i))
-i = list(map(lambda n: list(n.values()), i))
-list(map(lambda n: list(map(lambda m: chatIdList.add(int(m)), n)), i))
-chatIdList = list(chatIdList)
+with connection.cursor() as cursor:
+	"""
+		Initializing the Admins ...
+	"""
+	logger.info("Initializing the Admins ...")
+	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s", dict({"user": "USER"}))
+	constants.creator = cursor.fetchone()["id"]
+	"""
+		Admins initializated
+		Setting the admins list ...
+	"""
+	logger.info("Admins initializated\nSetting the admins list ...")
+	cursor.execute("SELECT `id` FROM `Admins`")
+	for i in cursor.fetchall():
+		adminsIdList.append(i["id"])
+	"""
+		Admins setted
+		Setting the chats list ...
+	"""
+	logger.info("Admins setted\nSetting the chats list ...")
+	cursor.execute("SELECT `id` FROM `Chats`")
+	for i in cursor.fetchall():
+		chatIdList.append(i["id"])
 chatIdList.append("me")
 """
 	Chats initializated
 	Initializing the Client ...
 """
+logger.info("Chats initializated\nInitializing the Client ...")
 app = Client(session_name=constants.username, api_id=constants.id, api_hash=constants.hash, phone_number=constants.phoneNumber)
+
 
 @app.on_message(Filters.service)
 def automaticRemovalStatus(client: Client, message: Message):
@@ -80,7 +87,7 @@ def automaticRemovalStatus(client: Client, message: Message):
 	Filters.command("check", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(
 		chatIdList) & stopFilter)
 def checkDatabase(client: Client, message: Message):
-	global adminsIdList, constants, chatIdList
+	global adminsIdList, connection, constants, chatIdList
 
 	"""
 		Removing the message
@@ -89,29 +96,25 @@ def checkDatabase(client: Client, message: Message):
 	"""
 		Sending the output
 	"""
-	element = constants.admins.to_json(orient="records")
-	element = element.replace("\":", "\": ")
-	print("{}".format(element))
+	with connection.cursor() as cursor:
+		cursor.execute("SELECT * FROM `Admins`")
+		print("{}".format(cursor.fetchall()))
 	print("\n{}\n".format(adminsIdList))
 	for j in adminsIdList:
 		print("\t{} - {}".format(j, type(j)))
-	element = constants.chats.to_json(orient="records")
-	element = element.replace("\":", "\": ")
-	element = element.replace(",\"", ", \"")
-	print("\n{}".format(element))
+	with connection.cursor() as cursor:
+		cursor.execute("SELECT * FROM `Chats`")
+		print("{}".format(cursor.fetchall()))
 	print("\n{}\n".format(chatIdList))
 	for j in chatIdList:
 		print("\t{} - {}".format(j, type(j)))
 	print("\n\n")
 	log(client, "I have checked the admin and the chat list at {}.".format(constants.now()))
-    logger.info("I have checked the admin and the chat list at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def evaluation(client: Client, message: Message):
-	global constants
-
 	"""
 		Extract the command
 	"""
@@ -132,15 +135,12 @@ def evaluation(client: Client, message: Message):
 		for k in range(1, len(text), maxLength):
 			time.sleep(random.randint(minute / 6, minute / 2))
 			message.reply_text(text[k:k + maxLength], quote=False)
-	log(client, "I have evaluated the command <code>{}</code> at {}.".format(command, constants.now()))
 	logger.info("I have evaluated the command <code>{}</code> at {}.".format(command, constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def execution(client: Client, message: Message):
-	global constants
-
 	"""
 		Extract the command
 	"""
@@ -169,7 +169,6 @@ def execution(client: Client, message: Message):
 		for k in range(1, len(text), maxLength):
 			time.sleep(random.randint(minute / 6, minute / 2))
 			message.reply_text(text[k:k + maxLength], quote=False)
-	log(client, "I have executed the command <code>{}</code> at {}.".format(command, constants.now()))
 	logger.info("I have executed the command <code>{}</code> at {}.".format(command, constants.now()))
 	client.send(UpdateStatus(offline=True))
 
@@ -189,35 +188,8 @@ def help(client: Client, message: Message):
 	"""
 	message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format(
 		"<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
-	log(client, "I sent the help at {}.".format(constants.now()))
 	logger.info("I sent the help at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
-
-
-def job(client: Client):
-	global constants, scheduler
-
-	"""
-		Sending the output
-	"""
-	scheduler.every().hour.do(subJob, client=client).tag("Temporary")
-	log(client, "I done my job at {}.".format(constants.now()))
-	logger.info("I done my job at {}.".format(constants.now()))
-	client.send(UpdateStatus(offline=True))
-
-
-def log(client: Client = None, logging: str = ""):
-	global constants, initialLog
-
-	if client is not None:
-		if initialLog is not None:
-			for msg in initialLog:
-				client.send_message(constants.log, msg)
-			initialLog = None
-		client.send_message(constants.log, logging)
-		client.send(UpdateStatus(offline=True))
-	else:
-		initialLog.append(logging)
 
 
 @app.on_message(Filters.command("retrieve", prefixes=list(["/", "!", "."])) & (Filters.user(constants.creator) | Filters.channel) & stopFilter)
@@ -251,6 +223,10 @@ def retrieveChatId(client: Client, message: Message):
 		chatDict = chat.__dict__
 		try:
 			del chatDict["_client"]
+		except KeyError:
+			pass
+		try:
+			del chatDict["_"]
 		except KeyError:
 			pass
 		try:
@@ -305,109 +281,104 @@ def retrieveChatId(client: Client, message: Message):
 			del chatDict["dc_id"]
 		except KeyError:
 			pass
-		if chatType is not None:
-			constants.chats = list([chatDict])
-			text = "I added {} to the list of allowed chat at {}.".format(chat.title, constants.now())
-		else:
-			constants.admins = list([chatDict])
-			text = "I added {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
-			text += "{}to the list of allowed chat at {}.".format("{} ".format(chat.last_name) if chat.last_name is not None else "", constants.now())
-	log(client, text)
+		with connection.cursor() as cursor:
+			if chatType is not None:
+				cursor.execute("UPDATE `Chats` SET `type`=%(type)s, `is_verified`=%(is_verified)s, `is_restricted`=%(is_restricted)s, `is_scam`=%(is_scam)s, `is_support`=%(is_support)s, `title`=%(title)s, `username`=%(username)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `invite_link`=%(invite_link)s WHERE `id`=%(id)s", chatDict)
+				text = "I added {} to the list of allowed chat at {}.".format(chat.title, constants.now())
+			else:
+				cursor.execute("UPDATE `Admins` SET `is_self`=%(is_self)s, `is_contact`=%(is_contact)s, `is_mutual_contact`=%(is_mutual_contact)s, `is_deleted`=%(is_deleted)s, `is_bot`=%(is_bot)s, `is_verified`=%(is_verified)s, `is_restricted`=%(is_restricted)s, `is_scam`=%(is_scam)s, `is_support`=%(is_support)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `username`=%(username)s, `language_code`=%(language_code)s, `phone_number`=%(phone_number)s WHERE `id`=%(id)s", chatDict)
+				text = "I added {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
+				text += "{}to the list of allowed chat at {}.".format("{} ".format(chat.last_name) if chat.last_name is not None else "", constants.now())
+			connection.commit()
 	logger.info(text)
 	client.send(UpdateStatus(offline=True))
 
 
-def subJob(client: Client):
-	global constants
+@app.on_message(Filters.command("scheduling", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList))
+def scheduling(client: Client, message: Message):
+	global constants, scheduler
 
-	log(client, "I done my job at {}.".format(constants.now()))
-	logger.info("I done my job at {}.".format(constants.now()))
-	client.send(UpdateStatus(offline=True))
+	logger.info("Setted the Job Queue")
+	scheduler.every().day.do(updateDatabase, client=client).run()
+	while True:
+		scheduler.run_pending()
 
 
 @app.on_message(Filters.command("update", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList) & stopFilter)
 def updateDatabase(client: Client, message: Message = None):
-	global adminsIdList, constants, chatIdList
+	global adminsIdList, connection, constants, chatIdList, stopFilter
 
-	"""
-		Copy the database
-	"""
-	copyPath = "~/Desktop"
-	if constants.databasePath == "downloads/{}/".format(constants.username):
-		copyPath = "."
-	elif constants.databasePath == "{}/".format(constants.username):
-		copyPath = ".."
-	os.system("cp {} {}".format(constants.databasePath, copyPath))
 	stopFilter.commute()
-	"""
-		Clearing the database
-	"""
-	del constants.admins
-	del constants.chats
 	"""
 		Updateing the admins database
 	"""
 	chats = client.get_users(adminsIdList)
 	chats.append(client.get_me())
 	chats = list(map(lambda n: n.__dict__, chats))
-	for i in chats:
-		try:
-			del i["_client"]
-		except KeyError:
-			pass
-		try:
-			del i["photo"]
-		except KeyError:
-			pass
-		try:
-			del i["description"]
-		except KeyError:
-			pass
-		try:
-			del i["pinned_message"]
-		except KeyError:
-			pass
-		try:
-			del i["sticker_set_name"]
-		except KeyError:
-			pass
-		try:
-			del i["can_set_sticker_set"]
-		except KeyError:
-			pass
-		try:
-			del i["members_count"]
-		except KeyError:
-			pass
-		try:
-			del i["restrictions"]
-		except KeyError:
-			pass
-		try:
-			del i["permissions"]
-		except KeyError:
-			pass
-		try:
-			del i["distance"]
-		except KeyError:
-			pass
-		try:
-			del i["status"]
-		except KeyError:
-			pass
-		try:
-			del i["last_online_date"]
-		except KeyError:
-			pass
-		try:
-			del i["next_offline_date"]
-		except KeyError:
-			pass
-		try:
-			del i["dc_id"]
-		except KeyError:
-			pass
-	constants.admins = chats
+	with connection.cursor() as cursor:
+		for i in chats:
+			try:
+				del i["_client"]
+			except KeyError:
+				pass
+			try:
+				del i["_"]
+			except KeyError:
+				pass
+			try:
+				del i["photo"]
+			except KeyError:
+				pass
+			try:
+				del i["description"]
+			except KeyError:
+				pass
+			try:
+				del i["pinned_message"]
+			except KeyError:
+				pass
+			try:
+				del i["sticker_set_name"]
+			except KeyError:
+				pass
+			try:
+				del i["can_set_sticker_set"]
+			except KeyError:
+				pass
+			try:
+				del i["members_count"]
+			except KeyError:
+				pass
+			try:
+				del i["restrictions"]
+			except KeyError:
+				pass
+			try:
+				del i["permissions"]
+			except KeyError:
+				pass
+			try:
+				del i["distance"]
+			except KeyError:
+				pass
+			try:
+				del i["status"]
+			except KeyError:
+				pass
+			try:
+				del i["last_online_date"]
+			except KeyError:
+				pass
+			try:
+				del i["next_offline_date"]
+			except KeyError:
+				pass
+			try:
+				del i["dc_id"]
+			except KeyError:
+				pass
+			cursor.execute("UPDATE `Admins` SET `is_self`=%(is_self)s, `is_contact`=%(is_contact)s, `is_mutual_contact`=%(is_mutual_contact)s, `is_deleted`=%(is_deleted)s, `is_bot`=%(is_bot)s, `is_verified`=%(is_verified)s, `is_restricted`=%(is_restricted)s, `is_scam`=%(is_scam)s, `is_support`=%(is_support)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `username`=%(username)s, `language_code`=%(language_code)s, `phone_number`=%(phone_number)s WHERE `id`=%(id)s", i)
+		connection.commit()
 	"""
 		Updateing the chats database
 	"""
@@ -419,75 +390,76 @@ def updateDatabase(client: Client, message: Message = None):
 		except FloodWait as e:
 			time.sleep(e.x)
 	chatIdList.append("me")
-	for i in chats:
-		try:
-			del i["_client"]
-		except KeyError:
-			pass
-		try:
-			del i["photo"]
-		except KeyError:
-			pass
-		try:
-			del i["description"]
-		except KeyError:
-			pass
-		try:
-			del i["pinned_message"]
-		except KeyError:
-			pass
-		try:
-			del i["sticker_set_name"]
-		except KeyError:
-			pass
-		try:
-			del i["can_set_sticker_set"]
-		except KeyError:
-			pass
-		try:
-			del i["members_count"]
-		except KeyError:
-			pass
-		try:
-			del i["restrictions"]
-		except KeyError:
-			pass
-		try:
-			del i["permissions"]
-		except KeyError:
-			pass
-		try:
-			del i["distance"]
-		except KeyError:
-			pass
-		try:
-			del i["status"]
-		except KeyError:
-			pass
-		try:
-			del i["last_online_date"]
-		except KeyError:
-			pass
-		try:
-			del i["next_offline_date"]
-		except KeyError:
-			pass
-		try:
-			del i["dc_id"]
-		except KeyError:
-			pass
-	constants.chats = chats
+	with connection.cursor() as cursor:
+		for i in chats:
+			try:
+				del i["_client"]
+			except KeyError:
+				pass
+			try:
+				del i["_"]
+			except KeyError:
+				pass
+			try:
+				del i["photo"]
+			except KeyError:
+				pass
+			try:
+				del i["description"]
+			except KeyError:
+				pass
+			try:
+				del i["pinned_message"]
+			except KeyError:
+				pass
+			try:
+				del i["sticker_set_name"]
+			except KeyError:
+				pass
+			try:
+				del i["can_set_sticker_set"]
+			except KeyError:
+				pass
+			try:
+				del i["members_count"]
+			except KeyError:
+				pass
+			try:
+				del i["restrictions"]
+			except KeyError:
+				pass
+			try:
+				del i["permissions"]
+			except KeyError:
+				pass
+			try:
+				del i["distance"]
+			except KeyError:
+				pass
+			try:
+				del i["status"]
+			except KeyError:
+				pass
+			try:
+				del i["last_online_date"]
+			except KeyError:
+				pass
+			try:
+				del i["next_offline_date"]
+			except KeyError:
+				pass
+			try:
+				del i["dc_id"]
+			except KeyError:
+				pass
+			cursor.execute("UPDATE `Chats` SET `type`=%(type)s, `is_verified`=%(is_verified)s, `is_restricted`=%(is_restricted)s, `is_scam`=%(is_scam)s, `is_support`=%(is_support)s, `title`=%(title)s, `username`=%(username)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `invite_link`=%(invite_link)s WHERE `id`=%(id)s", i)
+		connection.commit()
 	stopFilter.commute()
 	"""
 		Removing the message
 	"""
 	if message is not None and len(message.command) != 0:
 		message.delete(revoke=True)
-	"""
-		Removing the copy of the database
-	"""
-	os.system("rm -rf {}/database.json".format(copyPath))
-	log(client, "I have updated the database at {}.".format(constants.now()))
 	logger.info("I have updated the database at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
@@ -495,7 +467,7 @@ def updateDatabase(client: Client, message: Message = None):
 def unknownFilter():
 	global commands
 
-	def func(flt, message):
+	def func(flt, message: Message):
 		text = message.text or message.caption
 		if text:
 			message.matches = list(flt.p.finditer(text)) or None
@@ -513,21 +485,12 @@ def unknown(client: Client, message: Message):
 	if message.chat.type == "bot":
 		return
 	message.edit_text("This command isn\'t supported.")
-	log(client, "I managed an unsupported command at {}.".format(constants.now()))
-    logger.info("I managed an unsupported command at {}.".format(constants.now()))
+	logger.info("I managed an unsupported command at {}.".format(constants.now()))
 	client.send(UpdateStatus(offline=True))
 
 
-log(logging="Client initializated\nSetting the markup syntax ...")
 logger.info("Client initializated\nSetting the markup syntax ...")
 app.set_parse_mode("html")
-log(logging="Setted the markup syntax\nSetting the Job Queue ...")
-logger.info("Setted the markup syntax\nSetting the Job Queue ...")
-log(logging="Setted the Job Queue\nStarted serving ...")
-logger.info("Setted the Job Queue\nStarted serving ...")
-scheduler.every().day.do(job, client=app)
-i = scheduler.every().week.do(updateDatabase, client=app)
-with app:
-	i.run()
-	while True:
-		scheduler.run_pending()
+logger.info("Setted the markup syntax\nStarted serving ...")
+app.run()
+connection.close()
