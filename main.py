@@ -37,9 +37,7 @@ connection = pymysql.connect(host="localhost",
                              charset="utf8",
                              cursorclass=pymysql.cursors.DictCursor,
                              autocommit=False)
-flags = dict({"gnome": ""})
 logger.basicConfig(filename="{}{}.log".format(constants.databasePath, constants.username), datefmt="%d/%m/%Y %H:%M:%S", format="At %(asctime)s was logged the event:\t%(levelname)s - %(message)s", level=logger.INFO)
-minute = 60
 scheduler = schedule.default_scheduler
 stopFilter = Filters.create(lambda self, _: self.flag, flag=True, commute=stopFilterCommute)
 with connection.cursor() as cursor:
