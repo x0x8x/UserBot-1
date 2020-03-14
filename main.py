@@ -291,11 +291,12 @@ def retrieveChatId(client: Client, message: Message):
 
 
 @app.on_message(Filters.command("scheduling", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList))
-def scheduling(client: Client, message: Message):
+def scheduling(client: Client, _):
 	global scheduler
 
 	logger.info("Setted the Job Queue")
 	scheduler.every().day.do(updateDatabase, client=client).run()
+	client.send(UpdateStatus(offline=True))
 	while True:
 		scheduler.run_pending()
 
