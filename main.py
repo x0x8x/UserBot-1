@@ -1,9 +1,7 @@
 import os
 import logging as logger
-import random
 import re
 import subprocess
-import time
 from datetime import date
 
 import schedule
@@ -21,13 +19,7 @@ def stopFilterCommute(self):
 
 adminsIdList = list()
 chatIdList = list()
-commands = list(["check",
-				 "evaluate",
-				 "exec",
-				 "help",
-				 "retrieve",
-				 "update"
-				])
+commands = list(["check", "evaluate", "exec", "help", "retrieve", "update"])
 constants = Constants.Constants()
 connection = pymysql.connect(host="localhost",
                              user="USER",
@@ -41,59 +33,33 @@ logger.basicConfig(filename="{}{}.log".format(constants.databasePath, constants.
 scheduler = schedule.default_scheduler
 stopFilter = Filters.create(lambda self, _: self.flag, flag=True, commute=stopFilterCommute)
 with connection.cursor() as cursor:
-	"""
-		Initializing the Admins ...
-	"""
 	logger.info("Initializing the Admins ...")
 	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s", dict({"user": "USER"}))
 	constants.creator = cursor.fetchone()["id"]
-	"""
-		Admins initializated
-		Setting the admins list ...
-	"""
 	logger.info("Admins initializated\nSetting the admins list ...")
 	cursor.execute("SELECT `id` FROM `Admins`")
 	for i in cursor.fetchall():
 		adminsIdList.append(i["id"])
-	"""
-		Admins setted
-		Setting the chats list ...
-	"""
 	logger.info("Admins setted\nSetting the chats list ...")
 	cursor.execute("SELECT `id` FROM `Chats`")
 	for i in cursor.fetchall():
 		chatIdList.append(i["id"])
 chatIdList.append("me")
-"""
-	Chats initializated
-	Initializing the Client ...
-"""
 logger.info("Chats initializated\nInitializing the Client ...")
 app = Client(session_name=constants.username, api_id=constants.id, api_hash=constants.hash, phone_number=constants.phoneNumber)
 
 
 @app.on_message(Filters.service)
 def automaticRemovalStatus(client: Client, message: Message):
-	"""
-		Removing the status message
-	"""
 	message.delete(revoke=True)
 	client.send(UpdateStatus(offline=True))
 
 
-@app.on_message(
-	Filters.command("check", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(
-		chatIdList) & stopFilter)
-def checkDatabase(client: Client, message: Message):
+@app.on_message(Filters.command("check", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(chatIdList) & stopFilter)
+def checkDatabase(client: Client, _):
 	global adminsIdList, connection, chatIdList
 
-	"""
-		Removing the message
-	"""
 	message.delete(revoke=True)
-	"""
-		Sending the output
-	"""
 	with connection.cursor() as cursor:
 		cursor.execute("SELECT * FROM `Admins`")
 		print("{}".format(cursor.fetchall()))
@@ -111,19 +77,12 @@ def checkDatabase(client: Client, message: Message):
 
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def evaluation(client: Client, message: Message):
-	"""
-		Extract the command
-	"""
-	command = message.command
-	command.pop(0)
-	if len(command) == 1:
-		command = command.pop(0)
+	message.command.pop(0)
+	if len(message.command) == 1:
+		command = message.command.pop(0)
 	else:
-		command = " ".join(command)
+		command = " ".join(message.command)
 	result = eval(command)
-	"""
-		Sending the output
-	"""
 	text = "<b>Espression:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
 	maxLength = client.send(GetConfig()).message_length_max
 	message.edit_text(text[:maxLength])
@@ -137,27 +96,17 @@ def evaluation(client: Client, message: Message):
 
 @app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 def execution(client: Client, message: Message):
-	"""
-		Extract the command
-	"""
-	command = message.command
-	command.pop(0)
-	if len(command) == 1:
-		command = command.pop(0)
+	message.command.pop(0)
+	if len(message.command) == 1:
+		command = message.command.pop(0)
 	else:
-		command = " ".join(command)
-	"""
-		Execution of the command
-	"""
+		command = " ".join(message.command)
 	if command == "clear":
 		os.system(command)
 	result = subprocess.check_output(command, shell=True)
 	result = result.decode("utf-8")
 	if "\n" in result:
 		result = result.replace("\n", "</code>\n\t<code>")
-	"""
-		Sending the output
-	"""
 	text = "<b>Command:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
 	maxLength = client.send(GetConfig()).message_length_max
 	message.edit_text(text[:maxLength])
@@ -169,21 +118,12 @@ def execution(client: Client, message: Message):
 	client.send(UpdateStatus(offline=True))
 
 
-@app.on_message(
-	Filters.command("help", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(
-		chatIdList))
+@app.on_message(Filters.command("help", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(chatIdList))
 def help(client: Client, message: Message):
 	global commands
 
-	prefixes = list(["/",
-					 "!",
-					 "."
-					])
-	"""
-		Sending the output
-	"""
-	message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format(
-		"<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
+	prefixes = list(["/", "!", "."])
+	message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format("<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
 	logger.info("I sent the help.")
 	client.send(UpdateStatus(offline=True))
 
@@ -203,19 +143,13 @@ def retrieveChatId(client: Client, message: Message):
 		chat = client.get_users(chat.id)
 		lists = adminsIdList
 		text = "The user {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
-		text += "{}is already present in the list of allowed chat.".format("{} ".format(chat.last_name) if chat.last_name is not None else "")
+		text += "{} is already present in the list of allowed user.".format("{} ".format(chat.last_name) if chat.last_name is not None else "")
 	else:
 		chat = client.get_chat(chat.id)
-	"""
-		Removing the message
-	"""
 	message.delete(revoke=True)
 	if chat.id not in lists:
 		if chatType is not None and chat.id == constants.creator:
 			return
-		"""
-			Adding the chat to the database
-		"""
 		chatDict = chat.__dict__
 		try:
 			del chatDict["_client"]
@@ -284,7 +218,7 @@ def retrieveChatId(client: Client, message: Message):
 			else:
 				cursor.execute("INSERT INTO `Admins` (`id`, `is_self` ,`is_contact`, `is_mutual_contact`, `is_deleted`, `is_bot`, `is_verified`, `is_restricted`, `is_scam`, `is_support`, `first_name`, `last_name`, `username`, `language_code`, `phone_number`, `role`) VALUES (%(id)s, %(is_self)s, %(is_contact)s, %(is_mutual_contact)s, %(is_deleted)s, %(is_bot)s, %(is_verified)s, %(is_restricted)s, %(is_scam)s, %(is_support)s, %(first_name)s, %(last_name)s, %(username)s, %(language_code)s, %(phone_number)s)", chatDict)
 				text = "I added {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
-				text += "{}to the list of allowed chat.".format("{} ".format(chat.last_name) if chat.last_name is not None else "")
+				text += "{} to the list of allowed user.".format("{} ".format(chat.last_name) if chat.last_name is not None else "")
 			connection.commit()
 	logger.info(text)
 	client.send(UpdateStatus(offline=True))
@@ -306,9 +240,8 @@ def updateDatabase(client: Client, message: Message = None):
 	global adminsIdList, connection, chatIdList, stopFilter
 
 	stopFilter.commute()
-	"""
-		Updateing the admins database
-	"""
+	if message is not None:
+		message.delete(revoke=True)
 	chats = client.get_users(adminsIdList)
 	chats.append(client.get_me())
 	chats = list(map(lambda n: n.__dict__, chats))
@@ -376,9 +309,6 @@ def updateDatabase(client: Client, message: Message = None):
 				pass
 			cursor.execute("UPDATE `Admins` SET `is_self`=%(is_self)s, `is_contact`=%(is_contact)s, `is_mutual_contact`=%(is_mutual_contact)s, `is_deleted`=%(is_deleted)s, `is_bot`=%(is_bot)s, `is_verified`=%(is_verified)s, `is_restricted`=%(is_restricted)s, `is_scam`=%(is_scam)s, `is_support`=%(is_support)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `username`=%(username)s, `language_code`=%(language_code)s, `phone_number`=%(phone_number)s WHERE `id`=%(id)s", i)
 		connection.commit()
-	"""
-		Updateing the chats database
-	"""
 	chats = list()
 	chatIdList.remove("me")
 	for i in chatIdList:
@@ -452,11 +382,6 @@ def updateDatabase(client: Client, message: Message = None):
 			cursor.execute("UPDATE `Chats` SET `type`=%(type)s, `is_verified`=%(is_verified)s, `is_restricted`=%(is_restricted)s, `is_scam`=%(is_scam)s, `is_support`=%(is_support)s, `title`=%(title)s, `username`=%(username)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `invite_link`=%(invite_link)s WHERE `id`=%(id)s", i)
 		connection.commit()
 	stopFilter.commute()
-	"""
-		Removing the message
-	"""
-	if message is not None and len(message.command) != 0:
-		message.delete(revoke=True)
 	logger.info("I have updated the database.")
 	client.send(UpdateStatus(offline=True))
 
