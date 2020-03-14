@@ -1,8 +1,3 @@
-import time
-
-import pandas
-
-
 class Constants:
 
 	def __init__(self):
@@ -31,12 +26,6 @@ class Constants:
 	@property
 	def id(self) -> int:
 		return self.__appId
-
-	@staticmethod
-	def now() -> str:
-		timer = time.localtime()
-		return "{}:{}:{} of {}-{}-{}".format(timer.tm_hour, timer.tm_min, timer.tm_sec,
-											 timer.tm_mday, timer.tm_mon, timer.tm_year)
 
 	@property
 	def phoneNumber(self) -> str:

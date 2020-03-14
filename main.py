@@ -85,7 +85,7 @@ def automaticRemovalStatus(client: Client, message: Message):
 	Filters.command("check", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(
 		chatIdList) & stopFilter)
 def checkDatabase(client: Client, message: Message):
-	global adminsIdList, connection, constants, chatIdList
+	global adminsIdList, connection, chatIdList
 
 	"""
 		Removing the message
@@ -98,16 +98,14 @@ def checkDatabase(client: Client, message: Message):
 		cursor.execute("SELECT * FROM `Admins`")
 		print("{}".format(cursor.fetchall()))
 	print("\n{}\n".format(adminsIdList))
-	for j in adminsIdList:
-		print("\t{} - {}".format(j, type(j)))
+	print("{}\n".format(list(map(lambda n: "\t{} - {}\n".format(n, type(n)), adminsIdList))))
 	with connection.cursor() as cursor:
 		cursor.execute("SELECT * FROM `Chats`")
 		print("{}".format(cursor.fetchall()))
 	print("\n{}\n".format(chatIdList))
-	for j in chatIdList:
-		print("\t{} - {}".format(j, type(j)))
+	print("{}\n".format(list(map(lambda n: "\t{} - {}\n".format(n, type(n)), chatIdList))))
 	print("\n\n")
-	log(client, "I have checked the admin and the chat list at {}.".format(constants.now()))
+	logger.info("I have checked the admin and the chat list.")
 	client.send(UpdateStatus(offline=True))
 
 
@@ -133,7 +131,7 @@ def evaluation(client: Client, message: Message):
 		for k in range(1, len(text), maxLength):
 			time.sleep(random.randint(minute / 6, minute / 2))
 			message.reply_text(text[k:k + maxLength], quote=False)
-	logger.info("I have evaluated the command <code>{}</code> at {}.".format(command, constants.now()))
+	logger.info("I have evaluated the command <code>{}</code>.".format(command))
 	client.send(UpdateStatus(offline=True))
 
 
@@ -167,7 +165,7 @@ def execution(client: Client, message: Message):
 		for k in range(1, len(text), maxLength):
 			time.sleep(random.randint(minute / 6, minute / 2))
 			message.reply_text(text[k:k + maxLength], quote=False)
-	logger.info("I have executed the command <code>{}</code> at {}.".format(command, constants.now()))
+	logger.info("I have executed the command <code>{}</code>.".format(command))
 	client.send(UpdateStatus(offline=True))
 
 
@@ -175,7 +173,7 @@ def execution(client: Client, message: Message):
 	Filters.command("help", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(
 		chatIdList))
 def help(client: Client, message: Message):
-	global commands, constants
+	global commands
 
 	prefixes = list(["/",
 					 "!",
@@ -186,7 +184,7 @@ def help(client: Client, message: Message):
 	"""
 	message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format(
 		"<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
-	logger.info("I sent the help at {}.".format(constants.now()))
+	logger.info("I sent the help.")
 	client.send(UpdateStatus(offline=True))
 
 
@@ -282,11 +280,11 @@ def retrieveChatId(client: Client, message: Message):
 		with connection.cursor() as cursor:
 			if chatType is not None:
 				cursor.execute("INSERT INTO `Chats` (`id`, `type`, `is_verified`, `is_restricted`, `is_scam`, `is_support`, `title`, `username`, `first_name`, `last_name`, `invite_link`) VALUES (%(id)s, %(type)s, %(is_verified)s, %(is_restricted)s, %(is_scam)s, %(is_support)s, %(title)s, %(username)s, %(first_name)s, %(last_name)s, %(invite_link)s)", chatDict)
-				text = "I added {} to the list of allowed chat at {}.".format(chat.title, constants.now())
+				text = "I added {} to the list of allowed chat.".format(chat.title)
 			else:
 				cursor.execute("INSERT INTO `Admins` (`id`, `is_self` ,`is_contact`, `is_mutual_contact`, `is_deleted`, `is_bot`, `is_verified`, `is_restricted`, `is_scam`, `is_support`, `first_name`, `last_name`, `username`, `language_code`, `phone_number`, `role`) VALUES (%(id)s, %(is_self)s, %(is_contact)s, %(is_mutual_contact)s, %(is_deleted)s, %(is_bot)s, %(is_verified)s, %(is_restricted)s, %(is_scam)s, %(is_support)s, %(first_name)s, %(last_name)s, %(username)s, %(language_code)s, %(phone_number)s)", chatDict)
 				text = "I added {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
-				text += "{}to the list of allowed chat at {}.".format("{} ".format(chat.last_name) if chat.last_name is not None else "", constants.now())
+				text += "{}to the list of allowed chat.".format("{} ".format(chat.last_name) if chat.last_name is not None else "")
 			connection.commit()
 	logger.info(text)
 	client.send(UpdateStatus(offline=True))
@@ -294,7 +292,7 @@ def retrieveChatId(client: Client, message: Message):
 
 @app.on_message(Filters.command("scheduling", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList))
 def scheduling(client: Client, message: Message):
-	global constants, scheduler
+	global scheduler
 
 	logger.info("Setted the Job Queue")
 	scheduler.every().day.do(updateDatabase, client=client).run()
@@ -304,7 +302,7 @@ def scheduling(client: Client, message: Message):
 
 @app.on_message(Filters.command("update", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList) & stopFilter)
 def updateDatabase(client: Client, message: Message = None):
-	global adminsIdList, connection, constants, chatIdList, stopFilter
+	global adminsIdList, connection, chatIdList, stopFilter
 
 	stopFilter.commute()
 	"""
@@ -458,7 +456,7 @@ def updateDatabase(client: Client, message: Message = None):
 	"""
 	if message is not None and len(message.command) != 0:
 		message.delete(revoke=True)
-	logger.info("I have updated the database at {}.".format(constants.now()))
+	logger.info("I have updated the database.")
 	client.send(UpdateStatus(offline=True))
 
 
@@ -478,12 +476,10 @@ def unknownFilter():
 
 @app.on_message(unknownFilter() & Filters.user(adminsIdList) & Filters.chat(chatIdList))
 def unknown(client: Client, message: Message):
-	global constants
-
 	if message.chat.type == "bot":
 		return
 	message.edit_text("This command isn\'t supported.")
-	logger.info("I managed an unsupported command at {}.".format(constants.now()))
+	logger.info("I managed an unsupported command.")
 	client.send(UpdateStatus(offline=True))
 
 
