@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `Admins` (
   `is_support` BOOLEAN DEFAULT False,
   `first_name` TEXT DEFAULT NULL,
   `last_name` TEXT DEFAULT NULL,
-  `username` TEXT DEFAULT NULL,
+  `username` TEXT UNIQUE DEFAULT NULL,
   `language_code` TEXT DEFAULT NULL,
   `phone_number` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `Chats` (
   `is_scam` BOOLEAN DEFAULT False,
   `is_support` BOOLEAN DEFAULT False,
   `title` TEXT DEFAULT NULL,
-  `username` TEXT DEFAULT NULL,
+  `username` TEXT UNIQUE DEFAULT NULL,
   `first_name` TEXT DEFAULT NULL,
   `last_name` TEXT DEFAULT NULL,
   `invite_link` TEXT DEFAULT NULL,
