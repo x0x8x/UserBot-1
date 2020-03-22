@@ -1,17 +1,15 @@
-import os
+import asyncio
 import logging as logger
-import re
-import subprocess
-from datetime import date
-
-import schedule
+from modules import Constants
+import os
 import pymysql
 from pyrogram import Client, Filters, Message
 from pyrogram.api.functions.account import UpdateStatus
 from pyrogram.api.functions.help import GetConfig
 from pyrogram.errors import FloodWait
-
-from modules import Constants
+import re
+import schedule
+import subprocess
 
 def stopFilterCommute(self):
 	self.flag = not self.flag
@@ -21,20 +19,13 @@ adminsIdList = list()
 chatIdList = list()
 commands = list(["check", "evaluate", "exec", "help", "retrieve", "update"])
 constants = Constants.Constants()
-connection = pymysql.connect(host="localhost",
-                             user="USER",
-                             password="PASSWORD",
-                             database=constants.username,
-							 port=3306,
-                             charset="utf8",
-                             cursorclass=pymysql.cursors.DictCursor,
-                             autocommit=False)
+connection = pymysql.connect(host="localhost", user="USER", password="PASSWORD", database=constants.username, port=3306, charset="utf8", cursorclass=pymysql.cursors.DictCursor, autocommit=False)
 logger.basicConfig(filename="{}{}.log".format(constants.databasePath, constants.username), datefmt="%d/%m/%Y %H:%M:%S", format="At %(asctime)s was logged the event:\t%(levelname)s - %(message)s", level=logger.INFO)
 scheduler = schedule.default_scheduler
 stopFilter = Filters.create(lambda self, _: self.flag, flag=True, commute=stopFilterCommute)
 with connection.cursor() as cursor:
 	logger.info("Initializing the Admins ...")
-	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s", dict({"user": "USER"}))
+	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s", dict({"user": "giulioCoaInCamelCase"}))
 	constants.creator = cursor.fetchone()["id"]
 	logger.info("Admins initializated\nSetting the admins list ...")
 	cursor.execute("SELECT `id` FROM `Admins`")
@@ -50,16 +41,16 @@ app = Client(session_name=constants.username, api_id=constants.id, api_hash=cons
 
 
 @app.on_message(Filters.service)
-def automaticRemovalStatus(client: Client, message: Message):
-	message.delete(revoke=True)
-	client.send(UpdateStatus(offline=True))
+async def automaticRemovalStatus(client: Client, message: Message):
+	await message.delete(revoke=True)
+	await client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("check", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(chatIdList) & stopFilter)
-def checkDatabase(client: Client, _):
+async def checkDatabase(client: Client, _):
 	global adminsIdList, connection, chatIdList
 
-	message.delete(revoke=True)
+	await message.delete(revoke=True)
 	with connection.cursor() as cursor:
 		cursor.execute("SELECT * FROM `Admins`")
 		print("{}".format(cursor.fetchall()))
@@ -72,11 +63,11 @@ def checkDatabase(client: Client, _):
 	print("{}\n".format(list(map(lambda n: "\t{} - {}\n".format(n, type(n)), chatIdList))))
 	print("\n\n")
 	logger.info("I have checked the admin and the chat list.")
-	client.send(UpdateStatus(offline=True))
+	await client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
-def evaluation(client: Client, message: Message):
+async def evaluation(client: Client, message: Message):
 	message.command.pop(0)
 	if len(message.command) == 1:
 		command = message.command.pop(0)
@@ -85,17 +76,19 @@ def evaluation(client: Client, message: Message):
 	result = eval(command)
 	text = "<b>Espression:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
 	maxLength = client.send(GetConfig()).message_length_max
-	message.edit_text(text[:maxLength])
+	await message.edit_text(text[:maxLength])
 	if len(text) >= maxLength:
 		for k in range(1, len(text), maxLength):
-			time.sleep(random.randint(minute / 6, minute / 2))
-			message.reply_text(text[k:k + maxLength], quote=False)
+			try:
+				await message.reply_text(text[k:k + maxLength], quote=False)
+			except FloodWait as e:
+				time.sleep(e.x)
 	logger.info("I have evaluated the command <code>{}</code>.".format(command))
-	client.send(UpdateStatus(offline=True))
+	await client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
-def execution(client: Client, message: Message):
+async def execution(client: Client, message: Message):
 	message.command.pop(0)
 	if len(message.command) == 1:
 		command = message.command.pop(0)
@@ -109,27 +102,29 @@ def execution(client: Client, message: Message):
 		result = result.replace("\n", "</code>\n\t<code>")
 	text = "<b>Command:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
 	maxLength = client.send(GetConfig()).message_length_max
-	message.edit_text(text[:maxLength])
+	await message.edit_text(text[:maxLength])
 	if len(text) >= maxLength:
 		for k in range(1, len(text), maxLength):
-			time.sleep(random.randint(minute / 6, minute / 2))
-			message.reply_text(text[k:k + maxLength], quote=False)
+			try:
+				await message.reply_text(text[k:k + maxLength], quote=False)
+			except FloodWait as e:
+				time.sleep(e.x)
 	logger.info("I have executed the command <code>{}</code>.".format(command))
-	client.send(UpdateStatus(offline=True))
+	await client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("help", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(chatIdList))
-def help(client: Client, message: Message):
+async def help(client: Client, message: Message):
 	global commands
 
 	prefixes = list(["/", "!", "."])
-	message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format("<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
+	await message.edit_text("The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format("<code>\n\t\t</code>".join(commands), "<code>\n\t\t</code>".join(prefixes)))
 	logger.info("I sent the help.")
-	client.send(UpdateStatus(offline=True))
+	await client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("retrieve", prefixes=list(["/", "!", "."])) & (Filters.user(constants.creator) | Filters.channel) & stopFilter)
-def retrieveChatId(client: Client, message: Message):
+async def retrieveChatId(client: Client, message: Message):
 	global adminsIdList, constants, chatIdList
 
 	if message.from_user is not None and message.from_user.id != constants.creator:
@@ -140,13 +135,13 @@ def retrieveChatId(client: Client, message: Message):
 	chatType = chat.type
 	if chatType == "private" or chatType == "bot":
 		chatType = None
-		chat = client.get_users(chat.id)
+		await chat = client.get_users(chat.id)
 		lists = adminsIdList
 		text = "The user {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
 		text += "{} is already present in the list of allowed user.".format("{} ".format(chat.last_name) if chat.last_name is not None else "")
 	else:
-		chat = client.get_chat(chat.id)
-	message.delete(revoke=True)
+		await chat = client.get_chat(chat.id)
+	await message.delete(revoke=True)
 	if chat.id not in lists:
 		if chatType is not None and chat.id == constants.creator:
 			return
@@ -221,29 +216,29 @@ def retrieveChatId(client: Client, message: Message):
 				text += "{} to the list of allowed user.".format("{} ".format(chat.last_name) if chat.last_name is not None else "")
 			connection.commit()
 	logger.info(text)
-	client.send(UpdateStatus(offline=True))
+	await client.send(UpdateStatus(offline=True))
 
 
 @app.on_message(Filters.command("scheduling", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList))
-def scheduling(client: Client, _):
+async def scheduling(client: Client, _):
 	global scheduler
 
 	logger.info("Setted the Job Queue")
 	scheduler.every().day.do(updateDatabase, client=client).run()
-	client.send(UpdateStatus(offline=True))
+	await client.send(UpdateStatus(offline=True))
 	while True:
 		scheduler.run_pending()
 
 
 @app.on_message(Filters.command("update", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList) & stopFilter)
-def updateDatabase(client: Client, message: Message = None):
+async def updateDatabase(client: Client, message: Message = None):
 	global adminsIdList, connection, chatIdList, stopFilter
 
-	stopFilter.commute()
+	await stopFilter.commute()
 	if message is not None:
 		message.delete(revoke=True)
-	chats = client.get_users(adminsIdList)
-	chats.append(client.get_me())
+	await chats = client.get_users(adminsIdList)
+	await chats.append(client.get_me())
 	chats = list(map(lambda n: n.__dict__, chats))
 	with connection.cursor() as cursor:
 		for i in chats:
@@ -313,7 +308,7 @@ def updateDatabase(client: Client, message: Message = None):
 	chatIdList.remove("me")
 	for i in chatIdList:
 		try:
-			chats.append(client.get_chat(i).__dict__)
+			await chats.append(client.get_chat(i).__dict__)
 		except FloodWait as e:
 			time.sleep(e.x)
 	chatIdList.append("me")
@@ -381,9 +376,9 @@ def updateDatabase(client: Client, message: Message = None):
 				pass
 			cursor.execute("UPDATE `Chats` SET `type`=%(type)s, `is_verified`=%(is_verified)s, `is_restricted`=%(is_restricted)s, `is_scam`=%(is_scam)s, `is_support`=%(is_support)s, `title`=%(title)s, `username`=%(username)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `invite_link`=%(invite_link)s WHERE `id`=%(id)s", i)
 		connection.commit()
-	stopFilter.commute()
+	await stopFilter.commute()
 	logger.info("I have updated the database.")
-	client.send(UpdateStatus(offline=True))
+	await client.send(UpdateStatus(offline=True))
 
 
 def unknownFilter():
@@ -401,12 +396,12 @@ def unknownFilter():
 
 
 @app.on_message(unknownFilter() & Filters.user(adminsIdList) & Filters.chat(chatIdList))
-def unknown(client: Client, message: Message):
+async def unknown(client: Client, message: Message):
 	if message.chat.type == "bot":
 		return
-	message.edit_text("This command isn\'t supported.")
+	await message.edit_text("This command isn\'t supported.")
 	logger.info("I managed an unsupported command.")
-	client.send(UpdateStatus(offline=True))
+	await client.send(UpdateStatus(offline=True))
 
 
 logger.info("Client initializated\nSetting the markup syntax ...")
