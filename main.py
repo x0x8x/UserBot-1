@@ -220,7 +220,7 @@ async def retrieveChatId(client: Client, message: Message):
 
 
 @app.on_message(Filters.command("scheduling", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList))
-async def scheduling(client: Client, _):
+def scheduling(client: Client, _):
 	global scheduler
 
 	logger.info("Setted the Job Queue")
