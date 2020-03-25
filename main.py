@@ -1,15 +1,18 @@
 import asyncio
+from datetime import date
 import logging as logger
 from modules import Constants
 import os
 import pymysql
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, Emoji, Filters, Message
 from pyrogram.api.functions.account import UpdateStatus
 from pyrogram.api.functions.help import GetConfig
 from pyrogram.errors import FloodWait
+import random
 import re
 import schedule
 import subprocess
+import time
 
 def stopFilterCommute(self):
 	self.flag = not self.flag
@@ -17,15 +20,15 @@ def stopFilterCommute(self):
 
 adminsIdList = list()
 chatIdList = list()
-commands = list(["check", "evaluate", "exec", "help", "retrieve", "update"])
+commands = list(["check", "evaluate", "exec", "help", "retrieve", "scheduling", "update"])
 constants = Constants.Constants()
-connection = pymysql.connect(host="localhost", user="USER", password="PASSWORD", database=constants.username, port=3306, charset="utf8", cursorclass=pymysql.cursors.DictCursor, autocommit=False)
+connection = pymysql.connect(host="localhost", user="myUser", password="myPassword", database=constants.username, port=3306, charset="utf8", cursorclass=pymysql.cursors.DictCursor, autocommit=False)
 logger.basicConfig(filename="{}{}.log".format(constants.databasePath, constants.username), datefmt="%d/%m/%Y %H:%M:%S", format="At %(asctime)s was logged the event:\t%(levelname)s - %(message)s", level=logger.INFO)
 scheduler = schedule.default_scheduler
 stopFilter = Filters.create(lambda self, _: self.flag, flag=True, commute=stopFilterCommute)
 with connection.cursor() as cursor:
 	logger.info("Initializing the Admins ...")
-	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s", dict({"user": "giulioCoaInCamelCase"}))
+	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s", dict({"user": "myUser"}))
 	constants.creator = cursor.fetchone()["id"]
 	logger.info("Admins initializated\nSetting the admins list ...")
 	cursor.execute("SELECT `id` FROM `Admins`")
@@ -68,14 +71,13 @@ async def checkDatabase(client: Client, _):
 
 @app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 async def evaluation(client: Client, message: Message):
+	global minute
+
 	message.command.pop(0)
-	if len(message.command) == 1:
-		command = message.command.pop(0)
-	else:
-		command = " ".join(message.command)
+	command = " ".join(message.command)
 	result = eval(command)
 	text = "<b>Espression:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
-	maxLength = client.send(GetConfig()).message_length_max
+	await maxLength = client.send(GetConfig()).message_length_max
 	await message.edit_text(text[:maxLength])
 	if len(text) >= maxLength:
 		for k in range(1, len(text), maxLength):
@@ -89,19 +91,17 @@ async def evaluation(client: Client, message: Message):
 
 @app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
 async def execution(client: Client, message: Message):
+	global minute
+
 	message.command.pop(0)
-	if len(message.command) == 1:
-		command = message.command.pop(0)
-	else:
-		command = " ".join(message.command)
+	command = " ".join(message.command)
 	if command == "clear":
 		os.system(command)
 	result = subprocess.check_output(command, shell=True)
 	result = result.decode("utf-8")
-	if "\n" in result:
-		result = result.replace("\n", "</code>\n\t<code>")
+	result = result.replace("\n", "</code>\n\t<code>")
 	text = "<b>Command:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
-	maxLength = client.send(GetConfig()).message_length_max
+	await maxLength = client.send(GetConfig()).message_length_max
 	await message.edit_text(text[:maxLength])
 	if len(text) >= maxLength:
 		for k in range(1, len(text), maxLength):
@@ -236,7 +236,7 @@ async def updateDatabase(client: Client, message: Message = None):
 
 	await stopFilter.commute()
 	if message is not None:
-		message.delete(revoke=True)
+		await message.delete(revoke=True)
 	await chats = client.get_users(adminsIdList)
 	await chats.append(client.get_me())
 	chats = list(map(lambda n: n.__dict__, chats))
