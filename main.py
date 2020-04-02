@@ -77,7 +77,7 @@ async def evaluation(client: Client, message: Message):
 	command = " ".join(message.command)
 	result = eval(command)
 	text = "<b>Espression:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
-	await maxLength = client.send(GetConfig()).message_length_max
+	maxLength = await client.send(GetConfig()).message_length_max
 	await message.edit_text(text[:maxLength])
 	if len(text) >= maxLength:
 		for k in range(1, len(text), maxLength):
@@ -101,7 +101,7 @@ async def execution(client: Client, message: Message):
 	result = result.decode("utf-8")
 	result = result.replace("\n", "</code>\n\t<code>")
 	text = "<b>Command:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
-	await maxLength = client.send(GetConfig()).message_length_max
+	maxLength = await client.send(GetConfig()).message_length_max
 	await message.edit_text(text[:maxLength])
 	if len(text) >= maxLength:
 		for k in range(1, len(text), maxLength):
@@ -135,12 +135,12 @@ async def retrieveChatId(client: Client, message: Message):
 	chatType = chat.type
 	if chatType == "private" or chatType == "bot":
 		chatType = None
-		await chat = client.get_users(chat.id)
+		chat = await client.get_users(chat.id)
 		lists = adminsIdList
 		text = "The user {}".format("{} ".format(chat.first_name) if chat.first_name is not None else "")
 		text += "{} is already present in the list of allowed user.".format("{} ".format(chat.last_name) if chat.last_name is not None else "")
 	else:
-		await chat = client.get_chat(chat.id)
+		chat = await client.get_chat(chat.id)
 	await message.delete(revoke=True)
 	if chat.id not in lists:
 		if chatType is not None and chat.id == constants.creator:
@@ -237,7 +237,7 @@ async def updateDatabase(client: Client, message: Message = None):
 	await stopFilter.commute()
 	if message is not None:
 		await message.delete(revoke=True)
-	await chats = client.get_users(adminsIdList)
+	chats = await client.get_users(adminsIdList)
 	await chats.append(client.get_me())
 	chats = list(map(lambda n: n.__dict__, chats))
 	with connection.cursor() as cursor:
