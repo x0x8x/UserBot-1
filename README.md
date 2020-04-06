@@ -44,7 +44,7 @@ Module used to connect to a MySQL Server
   - MariaDB_ >= 5.5
 
 
-### telegraph
+### Telegraph
 
 Python Telegraph API wrapper
 
@@ -56,7 +56,7 @@ Python Telegraph API wrapper
 
 
 
-### schedule
+### Schedule
 
 Python job scheduling for humans
 
@@ -64,3 +64,9 @@ Python job scheduling for humans
 * Website: https://schedule.readthedocs.io/en/stable/
 * Documentation: https://schedule.readthedocs.io/en/stable/api.html
 * Module name: **schedule**
+
+
+.. _CPython: http://www.python.org/
+.. _PyPy: http://pypy.org/
+.. _MySQL: http://www.mysql.com/
+.. _MariaDB: https://mariadb.org/
