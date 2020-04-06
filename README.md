@@ -37,11 +37,11 @@ Module used to connect to a MySQL Server
 * Documentation: https://pymysql.readthedocs.io/en/latest/modules/index.html
 * Module name: **pymysql**
 * Python -- one of the following:
-  - CPython_ : 2.7 and >= 3.5
-  - PyPy_ : Latest version
+  - [CPython](http://www.python.org/) : 2.7 and >= 3.5
+  - [PyPy](http://pypy.org/) : Latest version
 * MySQL Server -- one of the following:
-  - MySQL_ >= 5.5
-  - MariaDB_ >= 5.5
+  - [MySQL](http://www.mysql.com/) >= 5.5
+  - [MariaDB](https://mariadb.org/) >= 5.5
 
 
 ### Telegraph
@@ -64,9 +64,3 @@ Python job scheduling for humans
 * Website: https://schedule.readthedocs.io/en/stable/
 * Documentation: https://schedule.readthedocs.io/en/stable/api.html
 * Module name: **schedule**
-
-
-.. _CPython: http://www.python.org/
-.. _PyPy: http://pypy.org/
-.. _MySQL: http://www.mysql.com/
-.. _MariaDB: https://mariadb.org/
