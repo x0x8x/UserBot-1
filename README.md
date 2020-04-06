@@ -36,12 +36,13 @@ Module used to connect to a MySQL Server
 * Website: https://pymysql.readthedocs.io/en/latest/
 * Documentation: https://pymysql.readthedocs.io/en/latest/modules/index.html
 * Module name: **pymysql**
-* Python -- one of the following:
-  - [CPython](http://www.python.org/) : 2.7 and >= 3.5
-  - [PyPy](http://pypy.org/) : Latest version
-* MySQL Server -- one of the following:
-  - [MySQL](http://www.mysql.com/) >= 5.5
-  - [MariaDB](https://mariadb.org/) >= 5.5
+* Requirements: **requests**
+	- Python -- one of the following:
+		+ [CPython](http://www.python.org/) : 2.7 and >= 3.5
+		+ [PyPy](http://pypy.org/) : Latest version
+	- MySQL Server -- one of the following:
+		+ [MySQL](http://www.mysql.com/) >= 5.5
+		+ [MariaDB](https://mariadb.org/) >= 5.5
 
 
 ### Telegraph
