@@ -6,18 +6,6 @@
 
 ## Modules
 
-### Pyrogram
-
-Module used to create the UserBot
-
-* Version: 0.16.0
-* Website: https://docs.pyrogram.org/
-* Documentation: https://docs.pyrogram.org/api/client
-* Module name: **pyrogram**
-* Requirements: **tgcrypto**
-
-
-
 ### Asyncio
 
 Modules used to make the UserBot work on 1 single thread
@@ -45,15 +33,16 @@ Module used to connect to a MySQL Server
 		+ [MariaDB](https://mariadb.org/) >= 5.5
 
 
-### Telegraph
 
-Python Telegraph API wrapper
+### Pyrogram
 
-* Version: 1.4.0
-* Website: https://python-telegraph.readthedocs.io/en/latest/
-* Documentation: https://python-telegraph.readthedocs.io/en/latest/telegraph.html
-* Module name: **telegraph**
-* Requirements: **requests**
+Module used to create the UserBot
+
+* Version: 0.16.0
+* Website: https://docs.pyrogram.org/
+* Documentation: https://docs.pyrogram.org/api/client
+* Module name: **pyrogram**
+* Requirements: **tgcrypto**
 
 
 
@@ -65,3 +54,15 @@ Python job scheduling for humans
 * Website: https://schedule.readthedocs.io/en/stable/
 * Documentation: https://schedule.readthedocs.io/en/stable/api.html
 * Module name: **schedule**
+
+
+
+### Telegraph
+
+Python Telegraph API wrapper
+
+* Version: 1.4.0
+* Website: https://python-telegraph.readthedocs.io/en/latest/
+* Documentation: https://python-telegraph.readthedocs.io/en/latest/telegraph.html
+* Module name: **telegraph**
+* Requirements: **requests**
