@@ -24,7 +24,7 @@ Module used to connect to a MySQL Server
 * Website: https://pymysql.readthedocs.io/en/latest/
 * Documentation: https://pymysql.readthedocs.io/en/latest/modules/index.html
 * Module name: **pymysql**
-* Requirements: **requests**
+* Requirements:
 	- Python -- one of the following:
 		+ [CPython](http://www.python.org/) : 2.7 and >= 3.5
 		+ [PyPy](http://pypy.org/) : Latest version
