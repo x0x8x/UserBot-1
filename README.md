@@ -1,6 +1,6 @@
 # UserBot template
 
-**Python template** for building an **UserBot**
+**Python template** for building a **UserBot**
 
 
 
@@ -13,6 +13,17 @@ Modules used to make the UserBot work on 1 single thread
 * Version: Python version
 * Documentation: https://docs.python.org/3.9/library/asyncio.html
 * Modules name: **asyncio**
+
+
+
+### Pandas
+
+Open source easy-to-use data structures and data analysis tools for Python
+
+* Version: 1.0.3
+* Website: https://pandas.pydata.org/docs/
+* Documentation: https://pandas.pydata.org/docs/reference/frame.html
+* Module name: **pandas**
 
 
 
@@ -43,6 +54,18 @@ Module used to create the UserBot
 * Documentation: https://docs.pyrogram.org/api/client
 * Module name: **pyrogram**
 * Requirements: **tgcrypto**
+
+
+
+### Requests
+
+HTTP library for Python, built for human beings
+
+* Version: 2.23.0
+* Website: https://requests.readthedocs.io/en/master/
+* Documentation: https://requests.readthedocs.io/en/master/user/advanced/
+* Module name: **requests**
+
 
 
 
