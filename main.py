@@ -167,83 +167,34 @@ async def retrieveChatId(client: Client, message: Message):
 		chat = await client.get_chat(message.chat.id)
 		chat = chat.__dict__
 	await message.delete(revoke=True)
-	if chat["id"] == constants.creator:
+	if chat["id"] == constants.creator or chat["id"] in lists:
 		await stopFilter.commute()
 		return
-	if chat["id"] not in lists:
+	lists.append(chat["id"])
+	chat.pop("_client")
+	chat.pop("_")
+	chat.pop("photo")
+	chat.pop("description")
+	chat.pop("pinned_message")
+	chat.pop("sticker_set_name")
+	chat.pop("can_set_sticker_set")
+	chat.pop("members_count")
+	chat.pop("restrictions")
+	chat.pop("permissions")
+	chat.pop("distance")
+	chat.pop("status")
+	chat.pop("last_online_date")
+	chat.pop("next_offline_date")
+	chat.pop("dc_id")
+	with connection.cursor() as cursor:
 		if message.chat.type == "private" or message.chat.type == "bot":
-			adminsIdList.append(chat["id"])
+			cursor.execute("INSERT INTO `Admins` (`id`, `is_self` ,`is_contact`, `is_mutual_contact`, `is_deleted`, `is_bot`, `is_verified`, `is_restricted`, `is_scam`, `is_support`, `first_name`, `last_name`, `username`, `language_code`, `phone_number`, `role`) VALUES (%(id)s, %(is_self)s, %(is_contact)s, %(is_mutual_contact)s, %(is_deleted)s, %(is_bot)s, %(is_verified)s, %(is_restricted)s, %(is_scam)s, %(is_support)s, %(first_name)s, %(last_name)s, %(username)s, %(language_code)s, %(phone_number)s)", chat)
+			text = "I added {}".format("{} ".format(chat["first_name"]) if chat["first_name"] is not None else "")
+			text += "{} to the list of allowed user.".format("{} ".format(chat["last_name"]) if chat["last_name"] is not None else "")
 		else:
-			chatIdList.append(chat["id"])
-		try:
-			del chat["_client"]
-		except KeyError:
-			pass
-		try:
-			del chat["_"]
-		except KeyError:
-			pass
-		try:
-			del chat["photo"]
-		except KeyError:
-			pass
-		try:
-			del chat["description"]
-		except KeyError:
-			pass
-		try:
-			del chat["pinned_message"]
-		except KeyError:
-			pass
-		try:
-			del chat["sticker_set_name"]
-		except KeyError:
-			pass
-		try:
-			del chat["can_set_sticker_set"]
-		except KeyError:
-			pass
-		try:
-			del chat["members_count"]
-		except KeyError:
-			pass
-		try:
-			del chat["restrictions"]
-		except KeyError:
-			pass
-		try:
-			del chat["permissions"]
-		except KeyError:
-			pass
-		try:
-			del chat["distance"]
-		except KeyError:
-			pass
-		try:
-			del chat["status"]
-		except KeyError:
-			pass
-		try:
-			del chat["last_online_date"]
-		except KeyError:
-			pass
-		try:
-			del chat["next_offline_date"]
-		except KeyError:
-			pass
-		try:
-			del chat["dc_id"]
-		except KeyError:
-			pass
-		with connection.cursor() as cursor:
-			if message.chat.type == "private" or message.chat.type == "bot":
-				cursor.execute("INSERT INTO `Admins` (`id`, `is_self` ,`is_contact`, `is_mutual_contact`, `is_deleted`, `is_bot`, `is_verified`, `is_restricted`, `is_scam`, `is_support`, `first_name`, `last_name`, `username`, `language_code`, `phone_number`, `role`) VALUES (%(id)s, %(is_self)s, %(is_contact)s, %(is_mutual_contact)s, %(is_deleted)s, %(is_bot)s, %(is_verified)s, %(is_restricted)s, %(is_scam)s, %(is_support)s, %(first_name)s, %(last_name)s, %(username)s, %(language_code)s, %(phone_number)s)", chat)
-				text = "I added {}".format("{} ".format(chat["first_name"]) if chat["first_name"] is not None else "")
-				text += "{} to the list of allowed user.".format("{} ".format(chat["last_name"]) if chat["last_name"] is not None else "")
-			else:
-				cursor.execute("INSERT INTO `Chats` (`id`, `type`, `is_verified`, `is_restricted`, `is_scam`, `is_support`, `title`, `username`, `first_name`, `last_name`, `invite_link`) VALUES (%(id)s, %(type)s, %(is_verified)s, %(is_restricted)s, %(is_scam)s, %(is_support)s, %(title)s, %(username)s, %(first_name)s, %(last_name)s, %(invite_link)s)", chat)
-				text = "I added {} to the list of allowed chat.".format(chat["title"])
-			connection.commit()
+			cursor.execute("INSERT INTO `Chats` (`id`, `type`, `is_verified`, `is_restricted`, `is_scam`, `is_support`, `title`, `username`, `first_name`, `last_name`, `invite_link`) VALUES (%(id)s, %(type)s, %(is_verified)s, %(is_restricted)s, %(is_scam)s, %(is_support)s, %(title)s, %(username)s, %(first_name)s, %(last_name)s, %(invite_link)s)", chat)
+			text = "I added {} to the list of allowed chat.".format(chat["title"])
+		connection.commit()
 	await stopFilter.commute()
 	logger.info(text)
 	await client.send(UpdateStatus(offline=True))
@@ -276,38 +227,14 @@ async def updateDatabase(client: Client, message: Message = None):
 	chats = list(map(lambda n: n.__dict__, chats))
 	with connection.cursor() as cursor:
 		for i in chats:
-			try:
-				del i["_client"]
-			except KeyError:
-				pass
-			try:
-				del i["_"]
-			except KeyError:
-				pass
-			try:
-				del i["photo"]
-			except KeyError:
-				pass
-			try:
-				del i["restrictions"]
-			except KeyError:
-				pass
-			try:
-				del i["status"]
-			except KeyError:
-				pass
-			try:
-				del i["last_online_date"]
-			except KeyError:
-				pass
-			try:
-				del i["next_offline_date"]
-			except KeyError:
-				pass
-			try:
-				del i["dc_id"]
-			except KeyError:
-				pass
+			i.pop("_client")
+			i.pop("_")
+			i.pop("photo")
+			i.pop("restrictions")
+			i.pop("status")
+			i.pop("last_online_date")
+			i.pop("next_offline_date")
+			i.pop("dc_id")
 			cursor.execute("UPDATE `Admins` SET `is_self`=%(is_self)s, `is_contact`=%(is_contact)s, `is_mutual_contact`=%(is_mutual_contact)s, `is_deleted`=%(is_deleted)s, `is_bot`=%(is_bot)s, `is_verified`=%(is_verified)s, `is_restricted`=%(is_restricted)s, `is_scam`=%(is_scam)s, `is_support`=%(is_support)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `username`=%(username)s, `language_code`=%(language_code)s, `phone_number`=%(phone_number)s WHERE `id`=%(id)s", i)
 		connection.commit()
 	chats = list()
@@ -320,50 +247,17 @@ async def updateDatabase(client: Client, message: Message = None):
 	chatIdList.append("me")
 	with connection.cursor() as cursor:
 		for i in chats:
-			try:
-				del i["_client"]
-			except KeyError:
-				pass
-			try:
-				del i["_"]
-			except KeyError:
-				pass
-			try:
-				del i["photo"]
-			except KeyError:
-				pass
-			try:
-				del i["description"]
-			except KeyError:
-				pass
-			try:
-				del i["pinned_message"]
-			except KeyError:
-				pass
-			try:
-				del i["sticker_set_name"]
-			except KeyError:
-				pass
-			try:
-				del i["can_set_sticker_set"]
-			except KeyError:
-				pass
-			try:
-				del i["members_count"]
-			except KeyError:
-				pass
-			try:
-				del i["restrictions"]
-			except KeyError:
-				pass
-			try:
-				del i["permissions"]
-			except KeyError:
-				pass
-			try:
-				del i["distance"]
-			except KeyError:
-				pass
+			i.pop("_client")
+			i.pop("_")
+			i.pop("photo")
+			i.pop("description")
+			i.pop("pinned_message")
+			i.pop("sticker_set_name")
+			i.pop("can_set_sticker_set")
+			i.pop("members_count")
+			i.pop("restrictions")
+			i.pop("permissions")
+			i.pop("distance")
 			cursor.execute("UPDATE `Chats` SET `type`=%(type)s, `is_verified`=%(is_verified)s, `is_restricted`=%(is_restricted)s, `is_scam`=%(is_scam)s, `is_support`=%(is_support)s, `title`=%(title)s, `username`=%(username)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `invite_link`=%(invite_link)s WHERE `id`=%(id)s", i)
 		connection.commit()
 	await stopFilter.commute()
