@@ -10,7 +10,6 @@ from pyrogram.errors import FloodWait
 import re
 import schedule
 import subprocess
-import time
 
 def stopFilterCommute(self):
 	self.flag = not self.flag
@@ -41,6 +40,42 @@ with connection.cursor() as cursor:
 chatIdList.append("me")
 logger.info("Chats initializated\nInitializing the Client ...")
 app = Client(session_name=constants.username, api_id=constants.id, api_hash=constants.hash, phone_number=constants.phoneNumber)
+
+
+async def split_edit_text(message: Message, text: str):
+	"""
+		A coroutine that edits the text of a message; if text is too long sends more messages.
+		:param message: Message to edit
+		:param text: Text to insert
+		:return: None
+	"""
+	global messageMaxLength
+
+	await message.edit_text(text[:messageMaxLength])
+	if len(text) >= messageMaxLength:
+		for i in range(1, len(text), messageMaxLength):
+			try:
+				await message.reply_text(text[i:i + messageMaxLength], quote=False)
+			except FloodWait as e:
+				await asyncio.sleep(e.x)
+
+
+async def split_reply_text(message: Message, text: str):
+	"""
+		A coroutine that reply to a message; if text is too long sends more messages.
+		:param message: Message to reply
+		:param text: Text to insert
+		:return: None
+	"""
+	global messageMaxLength
+
+	await message.reply_text(text[:messageMaxLength], quote=False)
+	if len(text) >= messageMaxLength:
+		for i in range(1, len(text), messageMaxLength):
+			try:
+				await message.reply_text(text[i:i + messageMaxLength], quote=False)
+			except FloodWait as e:
+				await asyncio.sleep(e.x)
 
 
 @app.on_message(Filters.service)
@@ -96,13 +131,7 @@ async def evaluation(client: Client, message: Message):
 	command = " ".join(message.command)
 	result = eval(command)
 	text = "<b>Espression:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
-	await message.edit_text(text[:messageMaxLength])
-	if len(text) >= messageMaxLength:
-		for i in range(1, len(text), messageMaxLength):
-			try:
-				await message.reply_text(text[i:i + messageMaxLength], quote=False)
-			except FloodWait as e:
-				time.sleep(e.x)
+	await split_edit_text(message, text)
 	logger.info("I have evaluated the command <code>{}</code>.".format(command))
 	await client.send(UpdateStatus(offline=True))
 
@@ -119,13 +148,7 @@ async def execution(client: Client, message: Message):
 	result = result.decode("utf-8")
 	result = result.replace("\n", "</code>\n\t<code>")
 	text = "<b>Command:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
-	await message.edit_text(text[:messageMaxLength])
-	if len(text) >= messageMaxLength:
-		for i in range(1, len(text), messageMaxLength):
-			try:
-				await message.reply_text(text[i:i + messageMaxLength], quote=False)
-			except FloodWait as e:
-				time.sleep(e.x)
+	await split_edit_text(message, text)
 	logger.info("I have executed the command <code>{}</code>.".format(command))
 	await client.send(UpdateStatus(offline=True))
 
@@ -136,13 +159,7 @@ async def help(client: Client, message: Message):
 
 	prefixes = list(["/", "!", "."])
 	text = "The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format("<code>\n\t\t</code>".join(commands), "<code>, </code>".join(prefixes))
-	await message.edit_text(text[:messageMaxLength], disable_web_page_preview=True)
-	if len(text) >= messageMaxLength:
-		for i in range(1, len(text), messageMaxLength):
-			try:
-				await message.reply_text(text[i:i + messageMaxLength], quote=False, disable_web_page_preview=True)
-			except FloodWait as e:
-				time.sleep(e.x)
+	await split_edit_text(message, text)
 	logger.info("I sent the help.")
 	await client.send(UpdateStatus(offline=True))
 
@@ -210,7 +227,7 @@ def scheduling(client: Client, _):
 	await client.send(UpdateStatus(offline=True))
 	while True:
 		scheduler.run_pending()
-		time.sleep(minute * 60 * 23)
+		asyncio.sleep(minute * 60 * 23)
 
 
 @app.on_message(Filters.command("update", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList) & stopFilter)
@@ -243,7 +260,7 @@ async def updateDatabase(client: Client, message: Message = None):
 		try:
 			await chats.append(client.get_chat(i).__dict__)
 		except FloodWait as e:
-			time.sleep(e.x)
+			asyncio.sleep(e.x)
 	chatIdList.append("me")
 	with connection.cursor() as cursor:
 		for i in chats:
