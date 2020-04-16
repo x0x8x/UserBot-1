@@ -3,10 +3,11 @@ import logging as logger
 from modules import Constants
 import os
 import pymysql
-from pyrogram import Client, Emoji, Filters, Message
+from pyrogram import Client, Filters, Message
 from pyrogram.api.functions.account import UpdateStatus
 from pyrogram.api.functions.help import GetConfig
 from pyrogram.errors import FloodWait
+import random
 import re
 import schedule
 import subprocess
@@ -17,9 +18,9 @@ def stopFilterCommute(self):
 
 adminsIdList = list()
 chatIdList = list()
-commands = list(["check", "clear", "evaluate", "exec", "help", "retrieve", "scheduling", "update"])
-connection = pymysql.connect(host="localhost", user="myUser", password="myPassword", database=constants.username, port=3306, charset="utf8", cursorclass=pymysql.cursors.DictCursor, autocommit=False)
+commands = ["check", "evaluate", "exec", "groups", "help", "retrieve", "scheduling", "update"]
 constants = Constants.Constants()
+connection = pymysql.connect(host="localhost", user="myUser", password="myPassword", database=constants.username, port=3306, charset="utf8", cursorclass=pymysql.cursors.DictCursor, autocommit=False)
 logger.basicConfig(filename="{}{}.log".format(constants.databasePath, constants.username), datefmt="%d/%m/%Y %H:%M:%S", format="At %(asctime)s was logged the event:\t%(levelname)s - %(message)s", level=logger.INFO)
 messageMaxLength = 0
 minute = 60
@@ -27,7 +28,7 @@ scheduler = schedule.default_scheduler
 stopFilter = Filters.create(lambda self, _: self.flag, flag=True, commute=stopFilterCommute)
 with connection.cursor() as cursor:
 	logger.info("Initializing the Admins ...")
-	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s", dict({"user": "myUser"}))
+	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s", {"user": "myUser"})
 	constants.creator = cursor.fetchone()["id"]
 	logger.info("Admins initializated\nSetting the admins list ...")
 	cursor.execute("SELECT `id` FROM `Admins`")
@@ -84,7 +85,7 @@ async def automaticRemovalStatus(client: Client, message: Message):
 	await client.send(UpdateStatus(offline=True))
 
 
-@app.on_message(Filters.command("check", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(chatIdList) & stopFilter)
+@app.on_message(Filters.command("check", prefixes=["/", "!", "."]) & Filters.user(constants.creator) & Filters.chat(chatIdList) & stopFilter)
 async def checkDatabase(client: Client, _):
 	global adminsIdList, connection, chatIdList
 
@@ -104,26 +105,7 @@ async def checkDatabase(client: Client, _):
 	await client.send(UpdateStatus(offline=True))
 
 
-@app.on_message(Filters.command("clear", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(chatIdList))
-async def clearSavedMessage(client: Client, message: Message):
-	global constants
-
-	maxLength = 200
-	message.command.pop(0)
-	await message.delete(revoke=True)
-	parameters = " ".join(message.command)
-	to_delete = await client.iter_history("me")
-	to_delete = list(to_delete)
-	if len(to_delete) == 0 or to_delete is None:
-		return
-	to_delete = list(map(lambda n: n.message_id, to_delete))
-	for i in range(0, len(to_delete), maxLength):
-		await client.delete_messages(chat_id, to_delete[i:i + maxLength], revoke=True)
-	logger.info("I have cleared the Telegram\'s Saved Messages chat.")
-	await client.send(UpdateStatus(offline=True))
-
-
-@app.on_message(Filters.command("evaluate", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
+@app.on_message(Filters.command("evaluate", prefixes=["/", "!", "."]) & Filters.user(constants.creator))
 async def evaluation(client: Client, message: Message):
 	global messageMaxLength
 
@@ -136,7 +118,7 @@ async def evaluation(client: Client, message: Message):
 	await client.send(UpdateStatus(offline=True))
 
 
-@app.on_message(Filters.command("exec", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator))
+@app.on_message(Filters.command("exec", prefixes=["/", "!", "."]) & Filters.user(constants.creator))
 async def execution(client: Client, message: Message):
 	global messageMaxLength
 
@@ -153,18 +135,36 @@ async def execution(client: Client, message: Message):
 	await client.send(UpdateStatus(offline=True))
 
 
-@app.on_message(Filters.command("help", prefixes=list(["/", "!", "."])) & Filters.user(constants.creator) & Filters.chat(chatIdList))
+@app.on_message(Filters.command("groups", prefixes=["/", "!", "."]) & Filters.user(constants.creator) & Filters.chat(chatIdList) & stopFilter)
+async def groups(client: Client, message: Message):
+	global connection, messageMaxLength
+
+	groups = list()
+	with connection.cursor() as cursor:
+		cursor.execute("SELECT `title`, `username`, `invite_link` FROM `Chats`")
+		i = list(filter(lambda n: n["username"] is not None, cursor.fetchall()))
+		groups = list(map(lambda n: "<a href=\"https://t.me/{}\">{}</a>".format(n["username"], n["title"]), i))
+		i = list(filter(lambda n: n["invite_link"] is not None and n["username"] is None, cursor.fetchall()))
+		groups.extend(list(map(lambda n: "<a href=\"{}\">{}</a>".format(n["invite_link"], n["title"]), i)))
+	groups = sorted(groups, key=lambda n: n[n.index(">") + 1:])
+	text = "Your groups are:\n\t{}".format("\n\t".join(groups))
+	await split_edit_text(message, text)
+	logger.info("I sent the groups list.")
+	await client.send(UpdateStatus(offline=True))
+
+
+@app.on_message(Filters.command("help", prefixes=["/", "!", "."]) & Filters.user(constants.creator) & Filters.chat(chatIdList))
 async def help(client: Client, message: Message):
 	global commands
 
-	prefixes = list(["/", "!", "."])
+	prefixes = ["/", "!", "."]
 	text = "The commands are:\n\t\t<code>{}</code>\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format("<code>\n\t\t</code>".join(commands), "<code>, </code>".join(prefixes))
 	await split_edit_text(message, text)
 	logger.info("I sent the help.")
 	await client.send(UpdateStatus(offline=True))
 
 
-@app.on_message(Filters.command("retrieve", prefixes=list(["/", "!", "."])) & (Filters.user(constants.creator) | Filters.channel) & stopFilter)
+@app.on_message(Filters.command("retrieve", prefixes=["/", "!", "."]) & (Filters.user(constants.creator) | Filters.channel) & stopFilter)
 async def retrieveChatId(client: Client, message: Message):
 	global adminsIdList, chatIdList, connection, stopFilter
 
@@ -217,20 +217,21 @@ async def retrieveChatId(client: Client, message: Message):
 	await client.send(UpdateStatus(offline=True))
 
 
-@app.on_message(Filters.command("scheduling", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList))
+@app.on_message(Filters.command("scheduling", prefixes=["/", "!", "."]) & Filters.user(adminsIdList))
 def scheduling(client: Client, _):
 	global messageMaxLength, scheduler
 
 	logger.info("Setted the Job Queue")
-	messageMaxLength = await client.send(GetConfig()).message_length_max
+	messageMaxLength = await client.send(GetConfig())
+	messageMaxLength = messageMaxLength.message_length_max
 	scheduler.every().day.do(updateDatabase, client=client).run()
 	await client.send(UpdateStatus(offline=True))
 	while True:
 		scheduler.run_pending()
-		asyncio.sleep(minute * 60 * 23)
+		await asyncio.sleep(minute * 60 * 23)
 
 
-@app.on_message(Filters.command("update", prefixes=list(["/", "!", "."])) & Filters.user(adminsIdList) & stopFilter)
+@app.on_message(Filters.command("update", prefixes=["/", "!", "."]) & Filters.user(adminsIdList) & stopFilter)
 async def updateDatabase(client: Client, message: Message = None):
 	global adminsIdList, chatIdList, connection, constants, stopFilter
 
@@ -260,7 +261,7 @@ async def updateDatabase(client: Client, message: Message = None):
 		try:
 			await chats.append(client.get_chat(i).__dict__)
 		except FloodWait as e:
-			asyncio.sleep(e.x)
+			await asyncio.sleep(e.x)
 	chatIdList.append("me")
 	with connection.cursor() as cursor:
 		for i in chats:
