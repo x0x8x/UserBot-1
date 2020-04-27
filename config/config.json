@@ -2,20 +2,38 @@
   "commands": [
     {
       "name": "add",
-      "description": "Add an admin to the database",
+      "description": "Add a user or a chat to the database",
       "domain": "creator",
       "parameters": ""
     },
     {
-      "name": "command1",
-      "description": "Command example",
+      "name": "check",
+      "description": "Check the database",
+      "domain": "creator",
+      "parameters": ""
+    },
+    {
+      "name": "clear",
+      "description": "Clear a chat",
+      "domain": "creator",
+      "parameters": ""
+    },
+    {
+      "name": "evaluate",
+      "description": "Evaluate a command",
       "domain": "all",
       "parameters": ""
     },
     {
-      "name": "command2",
-      "description": "Command example",
+      "name": "exec",
+      "description": "Exec a Shell command",
       "domain": "all",
+      "parameters": ""
+    },
+    {
+      "name": "groups",
+      "description": "Retrieve the list of my groups",
+      "domain": "creator",
       "parameters": ""
     },
     {
@@ -26,32 +44,20 @@
     },
     {
       "name": "init",
-      "description": "Initializing a bot's parameters",
+      "description": "Initializing a UserBot's parameters",
       "domain": "admin",
       "parameters": ""
     },
     {
       "name": "remove",
-      "description": "Remove an admin from the database",
+      "description": "Remove a user or a chat from the database",
       "domain": "creator",
-      "parameters": ""
-    },
-    {
-      "name": "report",
-      "description": "Send a report on the list of the commands",
-      "domain": "creator",
-      "parameters": ""
-    },
-    {
-      "name": "start",
-      "description": "Start the bot",
-      "domain": "all",
       "parameters": ""
     },
     {
       "name": "update",
       "description": "Update the database",
-      "domain": "admin",
+      "domain": "creator",
       "parameters": ""
     }
   ],
@@ -59,14 +65,11 @@
     "host": "localhost",
     "username": "username",
     "password": "password",
-    "port": 3306,
-    "name": "name"
+    "port": 3306
   },
   "logger": {
     "format": "%(asctime)s [%(levelname)s] %(message)s",
     "level": "",
     "path": ""
-  },
-  "messageMaxLength": 0,
-  "creator": ""
+  }
 }

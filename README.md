@@ -1,10 +1,35 @@
-# UserBot template
+# UserBot
 
 **Python template** for building a **UserBot**
 
 
 
 ## Modules
+
+### Aiofile
+
+Modules used to do asynchronous file operations
+
+* Version: 1.5.2
+* Documentation: https://github.com/mosquito/aiofile
+* Modules name: **aiofile**
+
+
+
+### APScheduler
+
+Library that lets you schedule your Python code to be executed later, either just once or periodically
+
+* Version: 3.6.3
+* Website: https://pymysql.readthedocs.io/en/latest/
+* Documentation: https://apscheduler.readthedocs.io/en/stable/modules/schedulers/asyncio.html#module-apscheduler.schedulers.asyncio
+* Modules name: **apscheduler**
+* Requirements:
+	- Python >= 3.4: none
+	- Python 3.3: **asyncio**
+	- Python <= 3.2: **trollius**
+
+
 
 ### Asyncio
 
@@ -13,17 +38,6 @@ Modules used to make the UserBot work on 1 single thread
 * Version: Python version
 * Documentation: https://docs.python.org/3.9/library/asyncio.html
 * Modules name: **asyncio**
-
-
-
-### Pandas
-
-Open source easy-to-use data structures and data analysis tools for Python
-
-* Version: 1.0.3
-* Website: https://pandas.pydata.org/docs/
-* Documentation: https://pandas.pydata.org/docs/reference/frame.html
-* Module name: **pandas**
 
 
 
@@ -54,38 +68,3 @@ Module used to create the UserBot
 * Documentation: https://docs.pyrogram.org/api/client
 * Module name: **pyrogram**
 * Requirements: **tgcrypto**
-
-
-
-### Requests
-
-HTTP library for Python, built for human beings
-
-* Version: 2.23.0
-* Website: https://requests.readthedocs.io/en/master/
-* Documentation: https://requests.readthedocs.io/en/master/user/advanced/
-* Module name: **requests**
-
-
-
-
-### Schedule
-
-Python job scheduling for humans
-
-* Version: 0.6.0
-* Website: https://schedule.readthedocs.io/en/stable/
-* Documentation: https://schedule.readthedocs.io/en/stable/api.html
-* Module name: **schedule**
-
-
-
-### Telegraph
-
-Python Telegraph API wrapper
-
-* Version: 1.4.0
-* Website: https://python-telegraph.readthedocs.io/en/latest/
-* Documentation: https://python-telegraph.readthedocs.io/en/latest/telegraph.html
-* Module name: **telegraph**
-* Requirements: **requests**
