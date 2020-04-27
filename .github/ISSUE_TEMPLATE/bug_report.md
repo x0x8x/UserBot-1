@@ -6,7 +6,7 @@ about: Create a bug report affecting the library
 <!-- WARNING: Ignoring this template could lead to the issue being closed as incomplete -->
 
 ## Checklist
-- [ ] I am sure the error is coming from UserBot's code and not elsewhere.
+- [ ] I am sure the error is coming from Bot's code and not elsewhere.
 - [ ] I have searched in the issue tracker for similar bug reports, including closed ones.
 
 ## Description
