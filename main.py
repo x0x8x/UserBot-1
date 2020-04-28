@@ -26,6 +26,7 @@ configurations_map = {
 }
 
 config = Configurations("config/config.json", configurations_map)
+config.parse()
 config.set("app_hash", os.environ.pop("app_hash", None))
 config.set("app_id", os.environ.pop("app_id", None))
 config.set("phoneNumber", os.environ.pop("phoneNumber", None))
