@@ -167,7 +167,6 @@ async def add_to_the_database(client: Client, message: Message):
 	chat.pop("is_contact", None)
 	chat.pop("is_mutual_contact", None)
 	chat.pop("is_deleted", None)
-	chat.pop("is_bot", None)
 	chat.pop("is_verified", None)
 	chat.pop("is_restricted", None)
 	chat.pop("is_scam", None)
@@ -175,7 +174,7 @@ async def add_to_the_database(client: Client, message: Message):
 
 	with connection.cursor() as cursor:
 		if config.get("creator") in lists:
-			cursor.execute("INSERT INTO `Admins` (`id`, `first_name`, `last_name`, `username`, `language_code`, `phone_number`) VALUES (%(id)s, %(first_name)s, %(last_name)s, %(username)s, %(language_code)s, %(phone_number)s)", chat)
+			cursor.execute("INSERT INTO `Admins` (`id`, `is_bot`, `first_name`, `last_name`, `username`, `language_code`, `phone_number`) VALUES (%(id)s, %(is_bot)s, %(first_name)s, %(last_name)s, %(username)s, %(language_code)s, %(phone_number)s)", chat)
 			text = "I added {}{} to the list of allowed user.".format("{} ".format(chat["first_name"]) if chat["first_name"] is not None else "", "{} ".format(chat["last_name"]) if chat["last_name"] is not None else "")
 		else:
 			cursor.execute("INSERT INTO `Chats` (`id`, `type`, `title`, `username`, `first_name`, `last_name`, `invite_link`) VALUES (%(id)s, %(type)s, %(title)s, %(username)s, %(first_name)s, %(last_name)s, %(invite_link)s)", chat)
@@ -428,13 +427,12 @@ async def updateDatabase(client: Client, message: Message = None):
 			i.pop("is_contact", None)
 			i.pop("is_mutual_contact", None)
 			i.pop("is_deleted", None)
-			i.pop("is_bot", None)
 			i.pop("is_verified", None)
 			i.pop("is_restricted", None)
 			i.pop("is_scam", None)
 			i.pop("is_support", None)
 			# Updating the admins' database
-			cursor.execute("UPDATE `Admins` SET `first_name`=%(first_name)s, `last_name`=%(last_name)s, `username`=%(username)s, `language_code`=%(language_code)s, `phone_number`=%(phone_number)s WHERE `id`=%(id)s", i)
+			cursor.execute("UPDATE `Admins` SET `is_bot`=%(is_bot)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `username`=%(username)s, `language_code`=%(language_code)s, `phone_number`=%(phone_number)s WHERE `id`=%(id)s", i)
 		connection.commit()
 
 	# Updating the chats' database

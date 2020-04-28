@@ -4,6 +4,7 @@ USE `UserBot`;
 DROP TABLE IF EXISTS `Admins`;
 CREATE TABLE IF NOT EXISTS `Admins` (
   `id` BIGINT,
+  `is_bot` BOOLEAN DEFAULT False,
   `first_name` TEXT DEFAULT NULL,
   `last_name` TEXT DEFAULT NULL,
   `username` TEXT UNIQUE DEFAULT NULL,
