@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `Admins` (
   `is_bot` BOOLEAN DEFAULT False,
   `first_name` TEXT DEFAULT NULL,
   `last_name` TEXT DEFAULT NULL,
-  `username` TEXT UNIQUE DEFAULT NULL,
+  `username` VARCHAR(32) UNIQUE DEFAULT NULL,
   `language_code` TEXT DEFAULT NULL,
   `phone_number` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`)
