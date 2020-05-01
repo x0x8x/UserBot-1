@@ -25,10 +25,12 @@ configurations_map = {
 	"logger": "logger"
 }
 
+loop = asyncio.get_event_loop()
+
 config = Configurations("config/config.json", configurations_map)
-await config.parse()
+loop.run_until_complete(config.parse())
 config.set("app_hash", os.environ.pop("app_hash", None))
-config.set("app_id", os.environ.pop("app_id", None))
+config.set("app_id", int(os.environ.pop("app_id", None)))
 config.set("phoneNumber", os.environ.pop("phoneNumber", None))
 config.set("userbot_username", os.environ.pop("userbot_username", None))
 
@@ -50,7 +52,7 @@ logger.basicConfig(
 	filename=config.get("logger")["path"],
 	datefmt="%d/%m/%Y %H:%M:%S",
 	format=config.get("logger")["format"],
-	level=config.get("logger").pop("level", "INFO"))
+	level=config.get("logger").pop("level", logger.INFO))
 
 minute = 60
 scheduler = AsyncIOScheduler()

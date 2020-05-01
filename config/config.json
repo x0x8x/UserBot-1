@@ -69,7 +69,7 @@
   },
   "logger": {
     "format": "%(asctime)s [%(levelname)s] %(message)s",
-    "level": "",
+    "level": 20,
     "path": ""
   }
 }
