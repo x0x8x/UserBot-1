@@ -13,6 +13,7 @@ Modules used to do asynchronous file operations
 * Version: 1.5.2
 * Documentation: https://github.com/mosquito/aiofile
 * Modules name: **aiofile**
+* Installing: `sudo python3 -m pip install --upgrade --no-cache-dir aiofile`
 
 
 
@@ -28,6 +29,7 @@ Library that lets you schedule your Python code to be executed later, either jus
 	- Python >= 3.4: none
 	- Python 3.3: **asyncio**
 	- Python <= 3.2: **trollius**
+* Installing: `sudo python3 -m pip install --upgrade --no-cache-dir apscheduler`
 
 
 
@@ -56,6 +58,7 @@ Module used to connect to a MySQL Server
 	- MySQL Server -- one of the following:
 		+ [MySQL](http://www.mysql.com/) >= 5.5
 		+ [MariaDB](https://mariadb.org/) >= 5.5
+* Installing: `sudo python3 -m pip install --upgrade --no-cache-dir PyMySQL`
 
 
 
@@ -63,8 +66,34 @@ Module used to connect to a MySQL Server
 
 Module used to create the UserBot
 
-* Version: 0.16.0 asyncio
+* Version: 0.16.0.asyncio
 * Website: https://docs.pyrogram.org/
 * Documentation: https://docs.pyrogram.org/api/client
 * Module name: **pyrogram**
 * Requirements: **tgcrypto**
+* Installing: `sudo python3 -m pip install --upgrade --no-cache-dir https://github.com/pyrogram/pyrogram/archive/asyncio.zip`
+
+
+
+### Requests
+
+HTTP library for Python, built for human beings
+
+* Version: 2.23.0
+* Website: https://requests.readthedocs.io/en/master/
+* Documentation: https://requests.readthedocs.io/en/master/user/advanced/
+* Module name: **requests**
+* Installing: `sudo python3 -m pip install --upgrade --no-cache-dir requests`
+
+
+
+### Telegraph
+
+Python Telegraph API wrapper
+
+* Version: 1.4.0
+* Website: https://python-telegraph.readthedocs.io/en/latest/
+* Documentation: https://python-telegraph.readthedocs.io/en/latest/telegraph.html
+* Module name: **telegraph**
+* Requirements: **requests**
+* Installing: `sudo python3 -m pip install --upgrade --no-cache-dir telegraph`
