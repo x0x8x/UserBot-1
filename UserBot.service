@@ -1,9 +1,9 @@
 [Unit]
-AssertPathExists=path_to_the_bot_directory
-AssertPathIsDirectory=path_to_the_bot_directory
-AssertDirectoryNotEmpty=path_to_the_bot_directory
-AssertPathExists=path_to_the_bot_directory/main.py
-AssertFileNotEmpty=path_to_the_bot_directory/main.py
+AssertPathExists=path_to_the_userbot_directory
+AssertPathIsDirectory=path_to_the_userbot_directory
+AssertDirectoryNotEmpty=path_to_the_userbot_directory
+AssertPathExists=path_to_the_userbot_directory/main.py
+AssertFileNotEmpty=path_to_the_userbot_directory/main.py
 After=network.target
 Description=Service that run the script that manage a UserBot
 
@@ -13,7 +13,7 @@ Restart=on-failure
 RestartSec=5s
 Type=simple
 User=my_user
-WorkingDirectory=path_to_the_bot_directory
+WorkingDirectory=path_to_the_userbot_directory
 
 [Install]
 Alias=userbot.service
