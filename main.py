@@ -75,7 +75,7 @@ with connection.cursor() as cursor:
 chatIdList.append("me")
 
 logger.info("Chats initializated\nInitializing the Client ...")
-app = Client(session_name=config.get("userbot_username"), api_id=config.get("app_id"), api_hash=config.get("app_hash"), phone_number=config.get("phone_number"))
+app = Client(session_name=config.get("userbot_username"), api_id=config.get("app_id"), api_hash=config.get("app_hash"), phone_number=config.get("phone_number"), lang_code="it")
 
 
 async def split_edit_text(message: Message, text: str):
