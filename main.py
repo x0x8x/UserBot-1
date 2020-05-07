@@ -31,7 +31,7 @@ config = Configurations("config/config.json", configurations_map)
 loop.run_until_complete(config.parse())
 config.set("app_hash", os.environ.pop("app_hash", None))
 config.set("app_id", int(os.environ.pop("app_id", None)))
-config.set("phoneNumber", os.environ.pop("phoneNumber", None))
+config.set("phone_number", os.environ.pop("phoneNumber", None))
 config.set("userbot_username", os.environ.pop("userbot_username", None))
 
 connection = pymysql.connect(
@@ -75,7 +75,7 @@ with connection.cursor() as cursor:
 chatIdList.append("me")
 
 logger.info("Chats initializated\nInitializing the Client ...")
-app = Client(session_name=config.get("userbot_username"), api_id=config.get("api_id"), api_hash=config.get("api_hash"), phoneNumber=config.get("phoneNumber"))
+app = Client(session_name=config.get("userbot_username"), api_id=config.get("app_id"), api_hash=config.get("app_hash"), phone_number=config.get("phone_number"))
 
 
 async def split_edit_text(message: Message, text: str):
