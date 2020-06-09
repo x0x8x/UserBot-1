@@ -13,13 +13,7 @@
       "parameters": ""
     },
     {
-      "name": "clear",
-      "description": "Clear a chat",
-      "domain": "creator",
-      "parameters": ""
-    },
-    {
-      "name": "evaluate",
+      "name": "eval",
       "description": "Evaluate a command",
       "domain": "all",
       "parameters": ""

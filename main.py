@@ -9,15 +9,12 @@ from pyrogram.api import functions
 from pyrogram.errors import FloodWait
 import random
 import re
-from res.configurations import Configurations
+import res
+from res import Configurations
 import subprocess
 
-def stopFilterCommute(self):
-	self.flag = not self.flag
-
-
-adminsIdList = list()
-chatIdList = list()
+admins_list = list()
+chats_list = list()
 
 configurations_map = {
 	"commands": "commands",
@@ -38,15 +35,11 @@ connection = pymysql.connect(
 	host=config.get("database")["host"],
 	user=config.get("database")["username"],
 	password=config.get("database")["password"],
-	database=config.get("bot_username"),
+	database=config.get("userbot_username"),
 	port=config.get("database")["port"],
 	charset="utf8",
 	cursorclass=pymysql.cursors.DictCursor,
 	autocommit=False)
-
-flags = {
-	"gnome": ""
-}
 
 logger.basicConfig(
 	filename=config.get("logger")["path"],
@@ -56,99 +49,65 @@ logger.basicConfig(
 
 minute = 60
 scheduler = AsyncIOScheduler()
-stopFilter = Filters.create(lambda self, _: self.flag, flag=True, commute=stopFilterCommute)
 
 with connection.cursor() as cursor:
 	logger.info("Initializing the Admins ...")
-	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s", {"user": "username"})
+	cursor.execute("SELECT `id` FROM `Admins` WHERE `username`=%(user)s;", {
+		"user": "username"
+	})
 	config.set("creator", cursor.fetchone()["id"])
 
 	logger.info("Admins initializated\nSetting the admins list ...")
-	cursor.execute("SELECT `id` FROM `Admins`")
-	for i in cursor.fetchall():
-		adminsIdList.append(i["id"])
+	cursor.execute("SELECT `id` FROM `Admins`;")
+	admins_list = list(map(lambda n: n["id"], cursor.fetchall()))
 
 	logger.info("Admins setted\nSetting the chats list ...")
-	cursor.execute("SELECT `id` FROM `Chats`")
-	for i in cursor.fetchall():
-		chatIdList.append(i["id"])
-chatIdList.append("me")
+	cursor.execute("SELECT `id` FROM `Chats`;")
+	chats_list = list(map(lambda n: n["id"], cursor.fetchall()))
+chats_list.append("me")
 
 logger.info("Chats initializated\nInitializing the Client ...")
 app = Client(session_name=config.get("userbot_username"), api_id=config.get("app_id"), api_hash=config.get("app_hash"), phone_number=config.get("phone_number"), lang_code="it")
 
 
-async def split_edit_text(message: Message, text: str):
-	"""
-		A coroutine that edits the text of a message; if text is too long sends more messages.
-		:param message: Message to edit
-		:param text: Text to insert
-		:return: None
-	"""
-	global config
-
-	await message.edit_text(text[:config.get("message_max_length")])
-	if len(text) >= config.get("message_max_length"):
-		for i in range(1, len(text), config.get("message_max_length")):
-			try:
-				await message.reply_text(text[i:i + config.get("message_max_length")], quote=False)
-			except FloodWait as e:
-				await asyncio.sleep(e.x)
-
-
-async def split_reply_text(message: Message, text: str):
-	"""
-		A coroutine that reply to a message; if text is too long sends more messages.
-		:param message: Message to reply
-		:param text: Text to insert
-		:return: None
-	"""
-	global config
-
-	await message.reply_text(text[:config.get("message_max_length")], quote=False)
-	if len(text) >= config.get("message_max_length"):
-		for i in range(1, len(text), config.get("message_max_length")):
-			try:
-				await message.reply_text(text[i:i + config.get("message_max_length")], quote=False)
-			except FloodWait as e:
-				await asyncio.sleep(e.x)
-
-
-@app.on_message(Filters.command("add", prefixes=["/", "!", "."]) & (Filters.user(config.get("creator")) | Filters.channel) & stopFilter)
+@app.on_message(Filters.command("add", prefixes="/") & (Filters.user(admins_list) | Filters.channel))
 async def add_to_the_database(client: Client, message: Message):
 	# /add
-	global adminsIdList, chatIdList, config, stopFilter
+	global admins_list, chats_list, config, connection
 
-	await stopFilter.commute()
-	# Checking if the message arrive from a channel and, if not, checking if the user that runs the command is allowed
-	if message.from_user is not None and message.from_user.id != config.get("creator"):
-		await stopFilter.commute()
-		return
-
-	lists = chatIdList
-	text = "The chat {} is already present in the list of allowed chat.".format(chat.title)
+	message.command.pop(0)
 
 	# Checking if the data are of a chat or of a user
 	if message.reply_to_message is not None:
-		chat = await client.get_users(message.reply_to_message.from_user.id)
-		chat = chat.__dict__
-		lists = adminsIdList
-		text = "The user @{} is already an admin.".format(chat["username"])
+		# Checking if the user is in the admins list
+		if message.reply_to_message.from_user.id in admins_list:
+			await res.split_reply_text(config, message, "The user @{} is already an admin.".format(message.reply_to_message.from_user.username), quote=False)
+			logger.info("{} have sent an incorrect /add request.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
+			return
+
+		# Retrieving the data of the new admin
+		chat = {
+			"id": message.reply_to_message.from_user.id
+		}
+
+		# Adding the new admin to the list
+		admins_list.append(chat["id"])
 	else:
-		chat = await client.get_chat(message.chat.id)
+		# Checking if the chat is in the list
+		if message.chat.id in chats_list:
+			await res.split_reply_text(config, message, "The chat {} is already present in the list of allowed chat.".format(message.chat.title), quote=False)
+			logger.info("{} have sent an incorrect /add request.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
+			return
+
+		# Retrieving the data of the chat
+		chat = message.chat
 		chat = chat.__dict__
 
 		# Deleting the message
 		await message.delete(revoke=True)
 
-	# Checking if the chat/user is in the list
-	if chat["id"] in lists:
-		await stopFilter.commute()
-		logger.info(text)
-		return
-
-	# Adding the chat/user to the database
-	lists.append(chat["id"])
+		# Adding the chat to the list
+		chats_list.append(chat["id"])
 
 	# Removing inutil informations
 	chat.pop("_client", None)
@@ -170,85 +129,141 @@ async def add_to_the_database(client: Client, message: Message):
 	chat.pop("is_contact", None)
 	chat.pop("is_mutual_contact", None)
 	chat.pop("is_deleted", None)
+	chat.pop("is_bot", None)
 	chat.pop("is_verified", None)
 	chat.pop("is_restricted", None)
 	chat.pop("is_scam", None)
 	chat.pop("is_support", None)
+	chat.pop("language_code", None)
 
 	with connection.cursor() as cursor:
-		if config.get("creator") in lists:
-			cursor.execute("INSERT INTO `Admins` (`id`, `is_bot`, `first_name`, `last_name`, `username`, `language_code`, `phone_number`) VALUES (%(id)s, %(is_bot)s, %(first_name)s, %(last_name)s, %(username)s, %(language_code)s, %(phone_number)s)", chat)
-			text = "I added {}{} to the list of allowed user.".format("{} ".format(chat["first_name"]) if chat["first_name"] is not None else "", "{} ".format(chat["last_name"]) if chat["last_name"] is not None else "")
+		if chat.get("type", None) is None:
+			# Adding the users to the database
+			cursor.execute("INSERT INTO `Admins` (`id`, `first_name`, `last_name`, `username`, `phone_number`) VALUES (%(id)s, %(first_name)s, %(last_name)s, %(username)s, %(phone_number)s);", chat)
+
+			text = "Admin added to the database."
 		else:
-			cursor.execute("INSERT INTO `Chats` (`id`, `type`, `title`, `username`, `first_name`, `last_name`, `invite_link`) VALUES (%(id)s, %(type)s, %(title)s, %(username)s, %(first_name)s, %(last_name)s, %(invite_link)s)", chat)
-			text = "I added {} to the list of allowed chat.".format(chat["title"])
-		connection.commit()
+			# Adding the chats to the database
+			cursor.execute("INSERT INTO `Chats` (`id`, `type`, `title`, `username`, `first_name`, `last_name`, `invite_link`) VALUES (%(id)s, %(type)s, %(title)s, %(username)s, %(first_name)s, %(last_name)s, %(invite_link)s);", chat)
 
-	await stopFilter.commute()
-	logger.info(text)
+			text = "Chat added to the database."
+	connection.commit()
 
-	await client.send(functions.account.UpdateStatus(offline=True))
+	await res.split_reply_text(config, message, text, quote=False)
+	logger.info("I\'ve answered to /add because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
+
+
+@app.on_callback_query(Filters.user(players_allowed_list))
+async def answer_inline_button(client: Client, callback_query: CallbackQuery):
+	global config, connection
+
+	# Retrieving the data of the CallbackQuery
+	data = callback_query.data.split("!")
+
+	"""
+		data[0] is the type of the request
+		data[1] is the number of the page
+	"""
+
+	# Retrieving the keyboard of the CallbackQuery
+	keyboard = callback_query.message.reply_markup.inline_keyboard
+
+	# Retrieving the text of the CallbackQuery
+	text = callback_query.message.text
+
+	# Checking if the CallbackQuery have the correct syntax
+	if data[0] == "groups":
+		data[1] = res.str_to_int(data[1])
+
+		# Retrieving the groups chats
+		with connection.cursor() as cursor:
+			cursor.execute("SELECT `id`, `title`, `username`, `invite_link` FROM `Chats`;")
+			chat = cursor.fetchall().copy()
+
+		chat = sorted(chat, key=lambda n: n["title"])
+
+		chat = chat[data[1] * 6 : (data[1] + 1) * 6]
+
+		# Restructuring the InlineKeyboard
+		for i in chat:
+			button = await chat_button(client, i, connection)
+
+			keyboard.append([
+				button
+			])
+
+		keyboard.append([
+			InlineKeyboardButton(text="Previous", callback_data="groups!{}".format(data[1] - 1))
+			InlineKeyboardButton(text="Next", callback_data="groups!{}".format(data[1] + 1))
+		])
+	keyboard = InlineKeyboardMarkup(keyboard)
+
+	await output.edit_reply_markup(keyboard)
+
+	logger.info("I have answered to an Inline button.")
 
 
 @app.on_message(Filters.service)
-async def automaticRemovalStatus(client: Client, message: Message):
+async def automatic_management_service(_, message: Message):
+	global config, connection
+
+	# Checking if the message is a new_chat_members message
+	if message.new_chat_members is not None:
+		# Retrieving the list of the spammer by Telegram
+		to_delete = message.new_chat_members.copy()
+		to_delete = list(map(lambda n: n.id, to_delete))
+
+		message.new_chat_members = list(filter(lambda n: n.is_scam is not None and n.is_scam is False, message.new_chat_members))
+
+		for i in message.new_chat_members:
+			to_delete.remove(i.id)
+
+		# Retrieving the list of the spammer by Combot Anti Spam
+		tmp = message.new_chat_members.copy()
+
+		for i in range(len(tmp)):
+			# Downloading the user's informations
+			response = requests.get(url="https://api.cas.chat/check?user_id={}".format(tmp[i].id))
+
+			# Retrieving the user's informations
+			result = response.json()
+
+			# Checking if it's a spammer
+			if result["ok"] is False:
+				continue
+
+			to_delete.append(message.new_chat_members.pop(i).id)
+
+		if to_delete is True:
+			for i in to_delete:
+				await message.chat.kick_member(i.id)
+
 	await message.delete(revoke=True)
-	await client.send(functions.account.UpdateStatus(offline=True))
 
 
-@app.on_message(Filters.command("check", prefixes=["/", "!", "."]) & Filters.user(config.get("creator")) & Filters.chat(chatIdList) & stopFilter)
-async def checkDatabase(client: Client, _):
-	# /check
-	global adminsIdList, connection, chatIdList
-
-	await message.delete(revoke=True)
+@app.on_message(Filters.command("check", prefixes="/") & Filters.user(config.get("creator")))
+async def check_database(_, message: Message):
+	global admins_list, connection, chats_list
 
 	with connection.cursor() as cursor:
-		cursor.execute("SELECT * FROM `Admins`")
-		print("{}".format(cursor.fetchall()))
-
-	print("\n{}\n".format(adminsIdList))
-	print("{}\n".format(list(map(lambda n: "\t{} - {}\n".format(n, type(n)), adminsIdList))))
+		cursor.execute("SELECT * FROM `Admins`;")
+		print("{}\n".format(cursor.fetchall()))
+	print("{}\n".format(list(map(lambda n: "\t{} - {}\n".format(n, type(n)), admins_list))))
 
 	with connection.cursor() as cursor:
-		cursor.execute("SELECT * FROM `Chats`")
-		print("{}".format(cursor.fetchall()))
-
-	print("\n{}\n".format(chatIdList))
-	print("{}\n".format(list(map(lambda n: "\t{} - {}\n".format(n, type(n)), chatIdList))))
+		cursor.execute("SELECT * FROM `Chats`;")
+		print("{}\n".format(cursor.fetchall()))
+	print("{}\n".format(list(map(lambda n: "\t{} - {}\n".format(n, type(n)), chats_list))))
 
 	print("\n\n")
-
-	logger.info("I have checked the admin and the chat list.")
-
-	await client.send(functions.account.UpdateStatus(offline=True))
+	logger.info("I\'ve answered to /check because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
 
 
-@app.on_message(Filters.command("clear", prefixes=["/", "!", "."]) & Filters.user(config.get("creator")) & Filters.chat(chatIdList))
-async def clearSavedMessage(client: Client, message: Message):
-	# /clear
-	maxLength = 200
-	message.command.pop(0)
-
-	await message.delete(revoke=True)
-
-	to_delete = await client.iter_history("me")
-	to_delete = list(to_delete)
-	if len(to_delete) == 0 or to_delete is None:
-		return
-	to_delete = list(map(lambda n: n.message_id, to_delete))
-
-	for i in range(0, len(to_delete), maxLength):
-		await client.delete_messages(chat_id, to_delete[i:i + maxLength], revoke=True)
-
-	logger.info("I have cleared the Telegram\'s Saved Messages chat.")
-
-	await client.send(functions.account.UpdateStatus(offline=True))
-
-
-@app.on_message(Filters.command("evaluate", prefixes=["/", "!", "."]))
+@app.on_message(Filters.command("eval", prefixes=["/", "!", "."]))
 async def evaluation(client: Client, message: Message):
-	# /evaluate
+	# /eval
+	global config
+
 	message.command.pop(0)
 
 	command = " ".join(message.command)
@@ -256,16 +271,17 @@ async def evaluation(client: Client, message: Message):
 	result = eval(command)
 	text = "<b>Espression:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
 
-	await split_edit_text(message, text)
+	await res.split_edit_text(config, message, text, quote=False)
 
 	logger.info("I have evaluated the command <code>{}</code>.".format(command))
-
-	await client.send(functions.account.UpdateStatus(offline=True))
+	logger.info("I\'ve answered to /eval because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
 
 
 @app.on_message(Filters.command("exec", prefixes=["/", "!", "."]))
 async def execution(client: Client, message: Message):
 	# /exec
+	global config
+
 	message.command.pop(0)
 
 	command = " ".join(message.command)
@@ -278,144 +294,185 @@ async def execution(client: Client, message: Message):
 	result = result.replace("\n", "</code>\n\t<code>")
 	text = "<b>Command:</b>\n\t<code>{}</code>\n\n<b>Result:</b>\n\t<code>{}</code>".format(command, result)
 
-	await split_edit_text(message, text)
+	await res.split_edit_text(config, message, text, quote=False)
 
-	logger.info("I have executed the command <code>{}</code>.".format(command))
-
-	await client.send(functions.account.UpdateStatus(offline=True))
+	logger.info("I\'ve answered to /exec because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
 
 
-@app.on_message(Filters.command("groups", prefixes=["/", "!", "."]) & Filters.user(config.get("creator")) & Filters.chat(chatIdList) & stopFilter)
-async def groups(client: Client, message: Message):
+@app.on_message(Filters.command("groups", prefixes="/") & Filters.user(players_allowed_list) & Filters.private)
+async def groups(_, message: Message):
 	# /groups
-	global connection
+	global config, connection
 
-	groups = list()
-
+	# Retrieving the groups chats
 	with connection.cursor() as cursor:
-		cursor.execute("SELECT `title`, `username`, `invite_link` FROM `Chats`")
-		i = list(filter(lambda n: n["username"] is not None, cursor.fetchall()))
+		cursor.execute("SELECT `id`, `title`, `username`, `invite_link` FROM `Chats`;")
+		chat = cursor.fetchall().copy()
 
-		groups = list(map(lambda n: "<a href=\"https://t.me/{}\">{}</a>".format(n["username"], n["title"]), i))
+	chat = sorted(chat, key=lambda n: n["title"])
 
-		i = list(filter(lambda n: n["invite_link"] is not None and n["username"] is None, cursor.fetchall()))
+	chat = chat[: 6]
 
-		groups.extend(list(map(lambda n: "<a href=\"{}\">{}</a>".format(n["invite_link"], n["title"]), i)))
+	# Restructuring the InlineKeyboard
+	for i in chat:
+		button = await chat_button(client, i, connection)
 
-	groups = sorted(groups, key=lambda n: n[n.index(">") + 1:])
-	text = "Your groups are:\n\t{}".format("\n\t".join(groups))
+		keyboard.append([
+			button
+		])
 
-	await split_edit_text(message, text)
+	keyboard.append([
+		InlineKeyboardButton(text="", callback_data=""),
+		InlineKeyboardButton(text="Next", callback_data="groups!1")
+	])
+	keyboard = InlineKeyboardMarkup(keyboard)
 
-	logger.info("I sent the groups list.")
+	await res.split_reply_text(config, message, "Your groups are:", quote=False, reply_markup=keyboard)
+	logger.info("I\'ve answered to /groups because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
 
-	await client.send(functions.account.UpdateStatus(offline=True))
 
-
-@app.on_message(Filters.command("help", prefixes=["/", "!", "."]) & Filters.chat(chatIdList))
+@app.on_message(Filters.command("help", prefixes="/") & Filters.user(players_allowed_list) & Filters.private)
 async def help(_, message: Message):
 	# /help
-	global config
+	global admins_list, config
 
-	prefixes = [
-		"/",
-		"!",
-		"."
-	]
 	commands = config.get("commands")
 
 	# Filter the commands list in base at their domain
-	if message.from_user.id not in adminsIdList:
-		commands = list(filter(lambda n: n["domain"] != "admin", commands))
 	if message.from_user.id != config.get("creator"):
 		commands = list(filter(lambda n: n["domain"] != "creator", commands))
+	if message.from_user.id not in admins_list:
+		commands = list(filter(lambda n: n["domain"] != "exarch", commands))
 
-	await split_reply_text(message, "In this section you will find the list of the command of the UserBot.\n\t{}\nThe prefixes for use this command are:\n\t\t<code>{}</code>".format("\n\t".join(list(map(lambda n: "<code>/{} {}</code> - {}".format(n["name"], n["parameters"], n["description"])), commands)), prefixes))
+	await res.split_reply_text(config, message, "In this section you will find the list of the command of the UserBot.\n\t{}".format("\n\t".join(list(map(lambda n: "<code>/{}{}</code> - {}".format(n["name"], " {}".format(n["parameters"]) if n["parameters"] != "" else n["parameters"], n["description"])), commands))), quote=False)
 
-	logger.info("I sent the help.")
-
-	await client.send(functions.account.UpdateStatus(offline=True))
+	logger.info("I\'ve answered to /help because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
 
 
-@app.on_message(Filters.command("init", prefixes="/") & Filters.user(adminsIdList) & Filters.private)
+@app.on_message(Filters.command("init", prefixes="/") & Filters.user(admins_list) & Filters.private)
 async def initializing(client: Client, _):
 	# /init
-	global config
+	global config, scheduler
 
+	# Scheduling the functions
+	scheduler.add_job(update, IntervalTrigger(days=1, timezone="Europe/Rome"), kwargs={
+		"client": client,
+		"message": None
+	})
+
+	# Setting the maximum message length
 	max_length = await client.send(functions.help.GetConfig())
 	config.set("message_max_length", max_length.message_length_max)
 
-	await client.send(functions.account.UpdateStatus(offline=True))
+	# Retrieving the UserBot id
+	userbot = await client.get_users(config.get("userbot_username"))
+	config.set("userbot_id", userbot.id)
+
+	logger.info("I\'ve answered to /init because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
 
 
-@app.on_message(Filters.command("remove", prefixes="/") & (Filters.user(config.get("creator")) | Filters.channel) & stopFilter)
-async def remove_from_the_database(_, message: Message):
+@app.on_message(Filters.command("remove", prefixes="/") & (Filters.user(admins_list) | Filters.channel))
+async def remove_from_the_database(client: Client, message: Message):
 	# /remove
-	global adminsIdList, chatIdList, config, stopFilter
-
-	await stopFilter.commute()
-
-	# Checking if the message arrive from a channel and, if not, checking if the user that runs the command is allowed
-	if message.from_user is not None and message.from_user.id != config.get("creator"):
-		await stopFilter.commute()
-		return
-
-	lists = chatIdList
-	title = message.chat.title
-	text = "The chat {} hasn\'t been removed from the list of allowed chat.".format(title)
+	global admins_list, chats_list, config
 
 	# Checking if the data are of a chat or of a user
 	if message.reply_to_message is not None:
-		ids = message.reply_to_message.from_user.id
-		lists = adminsIdList
-		text = "The user @{} hasn\'t been removed from the admins list.".format(message.reply_to_message.from_user.username)
+		# Checking if the user is authorized
+		if message.reply_to_message.from_user.id not in admins_list:
+			await res.split_reply_text(config, message, "You can\'t remove an admin that doesn't exists.", quote=False)
+			logger.info("{} have sent an incorrect /remove request.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
+			return
+
+		# Retrieving the data of the admin
+		chat = message.reply_to_message.from_user
+
+		# Removing the admin from the list
+		admins_list.remove(chat.id)
 	else:
-		ids = message.chat.id
+		# Checking if the chat is in the list
+		if message.chat.id not in chats_list:
+			await res.split_reply_text(config, message, "The chat {} isn\'t present in the list of allowed chat.".format(message.chat.title), quote=False)
+			logger.info("{} have sent an incorrect /remove request.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
+			return
+
+		# Retrieving the data of the chat
+		chat = message.chat
 
 		# Deleting the message
 		await message.delete(revoke=True)
 
-	# Checking if the chat/user is in the list
-	if ids not in lists:
-		await stopFilter.commute()
-		logger.info(text)
-		return
+		# Removing the chat from the list
+		chats_list.remove(chat.id)
 
 	# Removing the chat/user from the database
-	lists.remove(ids)
-
 	with connection.cursor() as cursor:
-		if config.get("creator") in lists:
-			cursor.execute("DELETE FROM `Admins` WHERE `id`=%(id)s", {"id": ids})
-			text = "The user @{} has been removed from the admins list.".format(message.reply_to_message.from_user.username)
-		else:
-			cursor.execute("DELETE FROM `Chats` WHERE `id`=%(id)s", {"id": ids})
-			text = "The chat {} has been removed from the list of allowed chat.".format(title)
-		connection.commit()
+		text = "Chat removed from the database."
 
-	await stopFilter.commute()
-	logger.info(text)
+		if cursor.execute("DELETE FROM `Chats` WHERE `id`=%(id)s;", {
+			"id": chat.id
+		}) == 0:
+			cursor.execute("DELETE FROM `Admins` WHERE `id`=%(id)s;", {
+				"id": chat.id
+			})
+
+			text = "Admin removed from the database."
+	connection.commit()
+
+	await res.split_reply_text(config, message, text, quote=False)
+	logger.info("I\'ve answered to /remove because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
 
 
-@app.on_message(Filters.command("update", prefixes="/") & Filters.user(config.get("creator")) & Filters.private & stopFilter)
-async def updateDatabase(client: Client, message: Message = None):
+@app.on_message(res.unknown_filter(config) & Filters.private)
+async def unknown(_, message: Message):
+	global config
+
+	await res.split_reply_text(config, message, "This command isn\'t supported.", quote=False)
+	logger.info("I managed an unsupported command.")
+
+
+@app.on_message(Filters.command("update", prefixes="/") & Filters.user(config.get("creator")) & Filters.private)
+async def update(client: Client, message: Message = None):
 	# /update
-	global adminsIdList, chatIdList, connection, config, stopFilter
+	global admins_list, chats_list, connection
 
-	await stopFilter.commute()
+	chats = await client.get_users(admins_list)
 
-	# Checking if the updating was programmed or not
-	if message is not None:
-		await message.delete(revoke=True)
+	# Retrieving the list of deleted accounts
+	to_delete = chats.copy()
+	to_delete = list(map(lambda n: n.id, to_delete))
 
-	# Updating the admin's database
-	adminsIdList.remove(config.get("creator"))
-	chats = await client.get_users(adminsIdList)
-	adminsIdList.append(config.get("creator"))
-	await chats.append(client.get_me())
+	chats = list(filter(lambda n: n.is_deleted is not None and n.is_deleted is False, chats))
+	chats = list(filter(lambda n: n.is_scam is not None and n.is_scam is False, chats))
+
+	for i in chats:
+		to_delete.remove(i.id)
+
+	# Retrieving the list of the spammer by Combot Anti Spam
+	tmp = chats.copy()
+
+	for i in range(len(tmp)):
+		# Downloading the user's informations
+		response = requests.get(url="https://api.cas.chat/check?user_id={}".format(tmp[i].id))
+
+		# Retrieving the user's informations
+		result = response.json()
+
+		# Checking if it's a spammer
+		if result["ok"] is False:
+			continue
+
+		to_delete.append(chats.pop(i).id)
+
 	chats = list(map(lambda n: n.__dict__, chats))
 
 	with connection.cursor() as cursor:
+		# Removing inutil informations
+		for i in to_delete:
+			cursor.execute("DELETE FROM `Admins` WHERE `id`=%(id)s;", {
+				"id": i
+			})
+
 		for i in chats:
 			# Removing inutil informations
 			i.pop("_client", None)
@@ -430,21 +487,25 @@ async def updateDatabase(client: Client, message: Message = None):
 			i.pop("is_contact", None)
 			i.pop("is_mutual_contact", None)
 			i.pop("is_deleted", None)
+			i.pop("is_bot", None)
 			i.pop("is_verified", None)
 			i.pop("is_restricted", None)
 			i.pop("is_scam", None)
 			i.pop("is_support", None)
-			# Updating the admins' database
-			cursor.execute("UPDATE `Admins` SET `is_bot`=%(is_bot)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `username`=%(username)s, `language_code`=%(language_code)s, `phone_number`=%(phone_number)s WHERE `id`=%(id)s", i)
-		connection.commit()
+			i.pop("language_code", None)
 
-	# Updating the chats' database
+			# Updating the database
+			cursor.execute("UPDATE `Admins` SET `first_name`=%(first_name)s, `last_name`=%(last_name)s, `username`=%(username)s, `phone_number`=%(phone_number)s WHERE `id`=%(id)s;", i)
+	connection.commit()
+
 	chats = list()
-	for i in chatIdList:
+	for i in chats_list:
 		try:
-			await chats.append(client.get_chat(i).__dict__)
+			chats.append(await client.get_chat(i))
 		except FloodWait as e:
 			await asyncio.sleep(e.x)
+
+	chats = list(map(lambda n: n.__dict__, chats))
 
 	with connection.cursor() as cursor:
 		for i in chats:
@@ -464,45 +525,60 @@ async def updateDatabase(client: Client, message: Message = None):
 			i.pop("is_restricted", None)
 			i.pop("is_scam", None)
 			i.pop("is_support", None)
-			# Updating the chats' database
-			cursor.execute("UPDATE `Chats` SET `type`=%(type)s, `title`=%(title)s, `username`=%(username)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `invite_link`=%(invite_link)s WHERE `id`=%(id)s", i)
-		connection.commit()
 
-	await stopFilter.commute()
-	logger.info("I have updated the database.")
+			# Updating the database
+			cursor.execute("UPDATE `Chats` SET `type`=%(type)s, `title`=%(title)s, `username`=%(username)s, `first_name`=%(first_name)s, `last_name`=%(last_name)s, `invite_link`=%(invite_link)s WHERE `id`=%(id)s;", i)
+	connection.commit()
 
-	await client.send(functions.account.UpdateStatus(offline=True))
+	for i in chats_list:
+		# Retrieving the list of chat members
+		members = await client.iter_chat_members(i)
+		members = list(members)
 
+		# Retrieving the users from the list
+		members = list(map(lambda n: n.user, members))
 
-def unknownFilter():
-	global config
+		members = list(filter(lambda n: n.is_bot is not None and n.is_bot is False, members))
 
-	def func(flt, message: Message):
-		text = message.text
-		if text:
-			message.matches = list(flt.p.finditer(text)) or None
-			if bool(message.matches) is False and (text.startswith(".") is True or text.startswith("!") is True or text.startswith("/") is True) and len(text) > 1 and text != "...":
-				return True
-		return False
+		# Retrieving the list of deleted accounts
+		to_delete = members.copy()
+		to_delete = list(map(lambda n: n.id, to_delete))
 
-	commands = list(map(lambda n: n["name"], config.get("commands")))
+		members = list(filter(lambda n: n.is_deleted is not None and n.is_deleted is False, members))
+		members = list(filter(lambda n: n.is_scam is not None and n.is_scam is False, members))
+		members = list(map(lambda n: n.id, members))
 
-	return Filters.create(func, "UnknownFilter", p=re.compile("/{}".format("|/".join(commands)), 0))
+		for j in members:
+			to_delete.remove(j)
 
+		# Retrieving the list of the spammer by Combot Anti Spam
+		tmp = members.copy()
 
-@app.on_message(unknownFilter() & Filters.private)
-async def unknown(_, message: Message):
-	await message.reply_text("This command isn\'t supported.")
-	logger.info("I managed an unsupported command.")
+		for i in range(len(tmp)):
+			# Downloading the user's informations
+			response = requests.get(url="https://api.cas.chat/check?user_id={}".format(tmp[i].id))
+
+			# Retrieving the user's informations
+			result = response.json()
+
+			# Checking if it's a spammer
+			if result["ok"] is False:
+				continue
+
+			to_delete.append(members.pop(i).id)
+
+		# Removing inutil informations
+		if to_delete is True:
+			for j in to_delete:
+				await message.chat.kick_member(j)
+
+	logger.info("I\'ve answered to /update because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
 
 
 logger.info("Client initializated\nSetting the markup syntax ...")
 app.set_parse_mode("html")
 
-logger.info("Set the markup syntax\nSetting the Job Queue ...")
-scheduler.add_job(updateDatabase, IntervalTrigger(days=1, timezone="Europe/Rome"), kwargs={"client": app})
-
-logger.info("Set the Job Queue\nStarted serving ...")
+logger.info("Set the markup syntax\nStarted serving ...")
 scheduler.start()
 app.run()
 connection.close()
