@@ -27,7 +27,7 @@
     {
       "name": "groups",
       "description": "Retrieve the list of my groups",
-      "domain": "creator",
+      "domain": "admin",
       "parameters": ""
     },
     {
@@ -51,7 +51,7 @@
     {
       "name": "update",
       "description": "Update the database",
-      "domain": "creator",
+      "domain": "admin",
       "parameters": ""
     }
   ],

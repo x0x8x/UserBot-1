@@ -4,7 +4,7 @@ import asyncio
 import logging as logger
 import os
 import pymysql
-from pyrogram import Client, Emoji, Filters, Message
+from pyrogram import Client, Filters, Message
 from pyrogram.api import functions
 from pyrogram.errors import FloodWait
 import random
@@ -12,9 +12,6 @@ import re
 import res
 from res import Configurations
 import subprocess
-
-admins_list = list()
-chats_list = list()
 
 configurations_map = {
 	"commands": "commands",
@@ -62,7 +59,7 @@ with connection.cursor() as cursor:
 	admins_list = list(map(lambda n: n["id"], cursor.fetchall()))
 
 	logger.info("Admins setted\nSetting the chats list ...")
-	cursor.execute("SELECT `id` FROM `Chats`;")
+	cursor.execute("SELECT `id` FROM `Chats` WHERE `type`!=bot;")
 	chats_list = list(map(lambda n: n["id"], cursor.fetchall()))
 chats_list.append("me")
 
@@ -273,7 +270,6 @@ async def evaluation(client: Client, message: Message):
 
 	await res.split_edit_text(config, message, text, quote=False)
 
-	logger.info("I have evaluated the command <code>{}</code>.".format(command))
 	logger.info("I\'ve answered to /eval because of {}.".format("@{}".format(message.from_user.username) if message.from_user.username is not None else message.from_user.id))
 
 
