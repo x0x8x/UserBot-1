@@ -190,7 +190,7 @@ async def answer_inline_button(client: Client, callback_query: CallbackQuery):
 			])
 
 		keyboard.append([
-			InlineKeyboardButton(text="Previous", callback_data="groups!{}".format(data[1] - 1))
+			InlineKeyboardButton(text="Previous", callback_data="groups!{}".format(data[1] - 1)),
 			InlineKeyboardButton(text="Next", callback_data="groups!{}".format(data[1] + 1))
 		])
 	keyboard = InlineKeyboardMarkup(keyboard)
